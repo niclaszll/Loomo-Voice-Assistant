@@ -17,6 +17,9 @@ import dagger.android.support.DaggerFragment
 import kotlinx.android.synthetic.main.fragment_startpage.*
 import javax.inject.Inject
 
+/**
+ * Startpage fragment, that currently renders everything needed
+ */
 @ActivityScoped
 class StartpageFragment @Inject constructor(private var applicationContext: Context) :
     DaggerFragment(), StartpageContract.View {
@@ -24,12 +27,16 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
     @Inject
     lateinit var presenter: StartpageContract.Presenter
 
+    /**
+     * Called when StartpageFragment is created
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
+        // check if voice recording permissions are granted
         if (ensurePermissions()) {
             Log.d("StartpageFragment", "Permissions granted")
             presenter.initSpeech()
@@ -50,14 +57,23 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         super.onDestroy()
     }
 
+    /**
+     * Render text from resourceIdentifier
+     */
     override fun showText(resourceIdentifier: Int) {
         textView.text = getString(resourceIdentifier)
     }
 
+    /**
+     * Render text from String
+     */
     override fun showText(text: String) {
         textView.text = text
     }
 
+    /**
+     * Ensure permissions are granted
+     */
     private fun ensurePermissions(): Boolean {
         val status = ActivityCompat.checkSelfPermission(
             applicationContext,
@@ -76,7 +92,9 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         return true
     }
 
-
+    /**
+     * Callback for permissions result
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,

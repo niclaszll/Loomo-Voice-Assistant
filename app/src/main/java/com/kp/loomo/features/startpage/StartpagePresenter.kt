@@ -7,6 +7,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Environment
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.annotation.Nullable
@@ -20,6 +21,9 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.inject.Inject
 
+/**
+ * Logic behind Startpage fragment
+ */
 @ActivityScoped
 class StartpagePresenter @Inject constructor(private var applicationContext: Context) : StartpageContract.Presenter {
 
@@ -39,12 +43,21 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         startpageFragment = null
     }
 
+    /**
+     * Initialize SST and TTS
+     */
     override fun initSpeech() {
+
+        Log.d("tag", applicationContext.filesDir.toString())
+        Log.d("ManActivity", Environment.getExternalStorageDirectory().toString())
+
         assistantLocation = File(applicationContext.filesDir, "snips")
         extractAssistantIfNeeded(assistantLocation)
 
+        // init Snips
         startSnips()
 
+        // init TTS
         mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
             if (status != TextToSpeech.ERROR){
                 //if there is no error then set language
@@ -53,11 +66,17 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         })
     }
 
+    /**
+     * Start snips client
+     */
     override fun startSnips() {
         val client = createClient(assistantLocation)
-        client.connect(this.applicationContext)
+        client.connect(applicationContext)
     }
 
+    /**
+     * Extracts the snips assistant if not already existent
+     */
     private fun extractAssistantIfNeeded(assistantLocation: File) {
         val versionFile = File(
             assistantLocation,
@@ -81,6 +100,9 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
 
     }
 
+    /**
+     * Create Snips client and register callbacks
+     */
     private fun createClient(assistantLocation: File): SnipsPlatformClient {
         val assistantDir = File(assistantLocation, "assistant")
 
@@ -94,12 +116,18 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
             .enableInjection(false)
             .build()
 
+        /**
+         * Called when client ready for voice command
+         */
         client.onPlatformReady = fun() {
             Log.d(tag, "Snips is ready. Say the wake word!")
             startpageFragment!!.showText(R.string.instruction)
             return
         }
 
+        /**
+         * Called on error
+         */
         client.onPlatformError =
             fun(snipsPlatformError: SnipsPlatformClient.SnipsPlatformError) {
                 // Handle error
@@ -108,6 +136,9 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
                 return
             }
 
+        /**
+         * Called when hotword is detected
+         */
         client.onHotwordDetectedListener = fun() {
             // Wake word detected, start a dialog session
             Log.d(tag, "Wake word detected!")
@@ -120,20 +151,27 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
             return
         }
 
+        /**
+         * Called when intent is detected
+         */
         client.onIntentDetectedListener = @SuppressLint("SetTextI18n")
         fun(intentMessage: IntentMessage) {
+
             // Intent detected, so the dialog session ends here
             client.endSession(intentMessage.sessionId, null)
             Log.d(tag, "Intent detected: " + intentMessage.intent.intentName)
 
+            // get answer from IntentHandler
             val answer = IntentHandler.handleIntent(intentMessage)
+
+            // render answer and give voice feedback
             startpageFragment!!.showText(answer)
             if (answer == ""){
-                //if there is no text
+                // if there is no text
                 Log.d(tag, "Empty answer :(")
             }
             else{
-                //if there is text
+                // if there is text
                 mTTS.speak(answer, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
             }
 
@@ -146,37 +184,35 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         return client
     }
 
-    @Throws(IOException::class)
+    /**
+     * Unzip helper function
+     * TODO: move to commons
+     */
     private fun unzip(zipFile: InputStream, targetDirectory: File) {
-        val zis = ZipInputStream(BufferedInputStream(zipFile))
-        zis.use { z ->
-            var ze: ZipEntry?
+        ZipInputStream(BufferedInputStream(zipFile)).use { zis ->
+            var ze = zis.nextEntry
             var count: Int
             val buffer = ByteArray(8192)
 
-            do {
-                ze = z.nextEntry
-                if (ze == null) {
-                    break
-                }
+            while (ze != null) {
                 val file = File(targetDirectory, ze.name)
+                println("unzipping ${file.absoluteFile}")
                 val dir = if (ze.isDirectory) file else file.parentFile
-                if (!dir!!.isDirectory && !dir.mkdirs())
-                    throw FileNotFoundException("Failed to make directory: " + dir.absolutePath)
-                if (ze.isDirectory)
+                if (!dir.isDirectory && !dir.mkdirs())
+                    throw FileNotFoundException("Failed to ensure directory: " + dir.absolutePath)
+                if (ze.isDirectory) {
+                    ze = zis.nextEntry
                     continue
-                val fout = FileOutputStream(file)
-                fout.use { f ->
-                    do {
-                        count = z.read(buffer)
-                        if (count == -1) {
-                            break
-                        }
-                        f.write(buffer, 0, count)
-                    } while (true)
                 }
-
-            } while (true)
+                FileOutputStream(file).use { fout ->
+                    count = zis.read(buffer)
+                    while (count != -1) {
+                        fout.write(buffer, 0, count)
+                        count = zis.read(buffer)
+                    }
+                }
+                ze = zis.nextEntry
+            }
         }
     }
 

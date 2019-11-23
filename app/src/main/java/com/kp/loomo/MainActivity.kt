@@ -9,11 +9,17 @@ import dagger.Lazy
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 
+/**
+ * Main activity that contains all future fragments (child views)
+ */
 class MainActivity : DaggerAppCompatActivity() {
 
     @Inject
     lateinit var startpageFragmentProvider: Lazy<StartpageFragment>
 
+    /**
+     * Called when MainActivity is created
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -37,6 +43,9 @@ class MainActivity : DaggerAppCompatActivity() {
         }
     }
 
+    /**
+     * Switch between fragments
+     */
     @SuppressLint("PrivateResource")
     private fun changeToFragment(f: Lazy<Fragment>) {
         val fragment = f.get()

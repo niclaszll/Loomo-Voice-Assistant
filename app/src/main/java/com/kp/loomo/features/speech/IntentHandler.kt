@@ -5,9 +5,13 @@ import android.util.Log
 import com.kp.loomo.features.speech.handler.CalculatorHandler
 import com.kp.loomo.features.speech.handler.WeatherHandler
 
+/**
+ * Intent handler that decides which specific handler should continue
+ */
 object IntentHandler {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
+    // add all handlers here
     init {
         listOfHandler.add(WeatherHandler())
         listOfHandler.add(CalculatorHandler())
@@ -15,7 +19,7 @@ object IntentHandler {
 
     fun handleIntent(intentMessage: IntentMessage): String {
 
-        Log.d("test", intentMessage.toString())
+        // iterate over each handler and check if handler can handler intentMessage
         listOfHandler.forEach {
             if (it.canHandle(intentMessage)) {
                 return it.handle(intentMessage)

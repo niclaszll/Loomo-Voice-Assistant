@@ -1,6 +1,7 @@
 package com.kp.loomo.features.speech.handler
 
 import ai.snips.hermes.IntentMessage
+import android.util.Log
 import com.google.gson.Gson
 import com.kp.loomo.features.speech.IntentMessageHandler
 import org.json.JSONException
@@ -20,6 +21,8 @@ class CalculatorHandler : IntentMessageHandler {
 
         val gson = Gson()
         val json = gson.toJson(intentMessage)
+
+        Log.d("test", json)
 
         try {
             val jObject = JSONObject(json)
