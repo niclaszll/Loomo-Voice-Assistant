@@ -14,7 +14,6 @@ interface StartpageContract {
 
         override fun takeView(view: View)
         override fun dropView()
-        fun startSnips()
         fun initSpeech()
     }
 }
