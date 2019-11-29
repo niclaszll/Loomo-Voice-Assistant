@@ -16,10 +16,18 @@ import com.kp.loomo.R
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.speech.AudioEmitter
 import com.kp.loomo.features.speech.RequestJavaV2Task
+import com.segway.robot.sdk.base.bind.ServiceBinder
+import com.segway.robot.sdk.voice.Recognizer
+import com.segway.robot.sdk.voice.Speaker
+import com.segway.robot.sdk.voice.VoiceException
+import com.segway.robot.sdk.voice.recognition.WakeupListener
+import com.segway.robot.sdk.voice.recognition.WakeupResult
+import com.segway.robot.sdk.voice.tts.TtsListener
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+
 
 private const val TAG = "StartpagePresenter"
 
@@ -44,6 +52,12 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
     // Audio Recording
     private var mAudioEmitter: AudioEmitter? = null
 
+    // Loomo SDK
+    private var mRecognizer: Recognizer? = null
+    private var mSpeaker: Speaker? = null
+    private var mWakeupListener: WakeupListener? = null
+    private var mTtsListener: TtsListener? = null
+
     // Speech client
     private val mSpeechClient by lazy {
         applicationContext.resources.openRawResource(R.raw.credential).use {
@@ -59,14 +73,21 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
      */
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
-        startAudioRecording()
+
+        initWakeUp()
+        initRecognizer()
         initDialogflowClient()
+        initSpeaker()
+
     }
 
     /**
      * Initialize Dialogflow client
      */
     private fun initDialogflowClient() {
+
+        Log.d(TAG, "initializing Dialogflow client ...")
+
         try {
             val stream: InputStream = applicationContext.resources.openRawResource(R.raw.credential)
             val credentials = GoogleCredentials.fromStream(stream)
@@ -89,6 +110,9 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
      * Start audio recording
      */
     private fun startAudioRecording() {
+
+        Log.d(TAG, "recording ...")
+        handler.post { startpageFragment?.showText("I'm listening...") }
 
         val isFirstRequest = AtomicBoolean(true)
         mAudioEmitter = AudioEmitter()
@@ -160,12 +184,15 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
      * Handle Dialogflow response
      */
     fun handleDialogflowResponse(response: DetectIntentResponse?) {
-        if (response != null) { // process aiResponse here
+        Log.d(TAG, "handling Dialogflow response")
+
+        if (response != null) {
             val botReply = response.queryResult.fulfillmentText
             startpageFragment?.showText(botReply)
-            Log.d(TAG, "V2 Bot Reply: $botReply")
+            mSpeaker!!.speak(botReply, mTtsListener!!)
+            Log.d(TAG, "Dialogflow Response: $botReply")
         } else {
-            Log.d(TAG, "Bot Reply: Null")
+            Log.d(TAG, "Dialogflow Response: Null")
         }
     }
 
@@ -173,6 +200,9 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
      * Send to Dialogflow
      */
     private fun sendToDialogflow(msg: String) {
+
+        Log.d(TAG, "sending message: '$msg' to Dialogflow")
+
         if (msg.trim { it <= ' ' }.isEmpty()) {
             Toast.makeText(applicationContext, "Please enter your query!", Toast.LENGTH_LONG).show()
         } else {
@@ -183,6 +213,103 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
                     )
                 ).build()
             RequestJavaV2Task(this, session!!, sessionsClient!!, queryInput).execute()
+        }
+    }
+
+    /**
+     * Init Loomo recognizer
+     */
+    private fun initRecognizer() {
+        mRecognizer = Recognizer.getInstance()
+        mRecognizer!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(TAG, "Recognition service onBind")
+                startWakeUpListener()
+            }
+
+            override fun onUnbind(s: String) {
+                Log.d(TAG, "Recognition service onUnbind")
+            }
+        })
+    }
+
+    /**
+     * Init Loomo recognizer
+     */
+    private fun initSpeaker() {
+
+        mTtsListener = object : TtsListener {
+            override fun onSpeechStarted(s: String) { //s is speech content, callback this method when speech is starting.
+                Log.d(TAG, "onSpeechStarted() called with: s = [$s]")
+            }
+
+            override fun onSpeechFinished(s: String) { //s is speech content, callback this method when speech is finish.
+                Log.d(TAG, "onSpeechFinished() called with: s = [$s]")
+                startWakeUpListener()
+            }
+
+            override fun onSpeechError(
+                s: String,
+                s1: String
+            ) { //s is speech content, callback this method when speech occurs error.
+                Log.d(
+                    TAG,
+                    "onSpeechError() called with: s = [$s], s1 = [$s1]"
+                )
+            }
+        }
+
+        mSpeaker = Speaker.getInstance()
+        mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(TAG, "Speaker service onBind")
+                mSpeaker!!.setVolume(50)
+            }
+
+            override fun onUnbind(s: String) {
+                Log.d(TAG, "Speaker service onUnbind")
+            }
+        })
+    }
+
+
+    /**
+     * Init Loomo wakeup
+     */
+    private fun initWakeUp() {
+        mWakeupListener = object : WakeupListener {
+            override fun onStandby() {
+                Log.d(TAG, "WakeUp onStandby")
+                handler.post { startpageFragment?.showText("Say 'Ok Loomo!'") }
+            }
+
+            override fun onWakeupResult(wakeupResult: WakeupResult) {
+                //show the wakeup result and wakeup angle.
+                Log.d(
+                    TAG,
+                    "Wakeup result:" + wakeupResult.result + ", angle " + wakeupResult.angle
+                )
+                handler.post {
+                    startAudioRecording()
+                }
+            }
+
+            override fun onWakeupError(s: String) {
+                //show the wakeup error reason.
+                Log.d(TAG, "WakeUp onWakeupError")
+
+            }
+        }
+    }
+
+    fun startWakeUpListener() {
+        if (mRecognizer == null) {
+            return
+        }
+        try {
+            mRecognizer!!.startWakeupMode(mWakeupListener)
+        } catch (e: VoiceException) {
+            Log.e(TAG, "Exception: ", e)
         }
     }
 
