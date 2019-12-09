@@ -1,8 +1,11 @@
 package com.kp.loomo.features.startpage
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.Nullable
@@ -15,6 +18,8 @@ import com.google.cloud.speech.v1.*
 import com.kp.loomo.R
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.speech.AudioEmitter
+import com.kp.loomo.features.speech.IntentHandler
+import com.kp.loomo.features.speech.PocketSphinxManager
 import com.kp.loomo.features.speech.RequestJavaV2Task
 import com.segway.robot.sdk.base.bind.ServiceBinder
 import com.segway.robot.sdk.voice.Recognizer
@@ -35,7 +40,7 @@ private const val TAG = "StartpagePresenter"
  * Logic behind Startpage fragment
  */
 @ActivityScoped
-class StartpagePresenter @Inject constructor(private var applicationContext: Context) :
+class StartpagePresenter @Inject constructor(private var applicationContext: Context, private var pocketSphinxManager: PocketSphinxManager, private var connectivityManager: ConnectivityManager) :
     StartpageContract.Presenter {
 
     @Nullable
@@ -68,17 +73,43 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         }
     }
 
+    private var mTTS: TextToSpeech? = null
+    private var isManual = false
+
     /**
      * Initialize all speech services
      */
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        initWakeUp()
-        initRecognizer()
-        initDialogflowClient()
-        initSpeaker()
+        if (hasInternetConnection()) {
+            // online
+            initWakeUp()
+            initRecognizer()
+            initDialogflowClient()
+            initSpeaker()
 
+        } else {
+            // offline
+            pocketSphinxManager.runRecognizerSetup()
+        }
+    }
+
+    /**
+     * Initialize Manual speech after button click
+     */
+    override fun initManualSpeech() {
+        isManual = true
+
+        // init TSS
+        mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+            if (status != TextToSpeech.ERROR) {
+                //if there is no error then set language
+                mTTS?.language = Locale.US
+            }
+        })
+
+        startAudioRecording()
     }
 
     /**
@@ -137,7 +168,7 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
                                         0
                                     ).transcript
                                 )
-                                onCompleted()
+
                             }
                             else -> Log.d(TAG, "Error!")
                         }
@@ -149,9 +180,8 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
                 }
 
                 override fun onCompleted() {
-                    mAudioEmitter?.stop()
-                    mSpeechClient.shutdown()
                     Log.d(TAG, "stream closed")
+                    mAudioEmitter?.stop()
                 }
             })
 
@@ -171,7 +201,7 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
                             .build()
                     )
                     .setInterimResults(false)
-                    .setSingleUtterance(false)
+                    .setSingleUtterance(true)
                     .build()
             }
 
@@ -187,9 +217,15 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         Log.d(TAG, "handling Dialogflow response")
 
         if (response != null) {
-            val botReply = response.queryResult.fulfillmentText
+            //val botReply = response.queryResult.fulfillmentText
+            val botReply = IntentHandler.handleIntent(response)
             startpageFragment?.showText(botReply)
-            mSpeaker!!.speak(botReply, mTtsListener!!)
+
+            if (isManual) {
+                mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+            } else {
+                mSpeaker!!.speak(botReply, mTtsListener!!)
+            }
             Log.d(TAG, "Dialogflow Response: $botReply")
         } else {
             Log.d(TAG, "Dialogflow Response: Null")
@@ -234,7 +270,7 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
     }
 
     /**
-     * Init Loomo recognizer
+     * Init Loomo speaker
      */
     private fun initSpeaker() {
 
@@ -302,7 +338,7 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         }
     }
 
-    fun startWakeUpListener() {
+    private fun startWakeUpListener() {
         if (mRecognizer == null) {
             return
         }
@@ -311,6 +347,12 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         } catch (e: VoiceException) {
             Log.e(TAG, "Exception: ", e)
         }
+    }
+
+    private fun hasInternetConnection (): Boolean {
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+
+        return activeNetwork?.isConnectedOrConnecting == true
     }
 
     override fun takeView(view: StartpageContract.View) {
@@ -323,6 +365,8 @@ class StartpagePresenter @Inject constructor(private var applicationContext: Con
         mAudioEmitter = null
         mSpeechClient.shutdown()
         startpageFragment = null
+
+        pocketSphinxManager.shutdown()
     }
 
 }

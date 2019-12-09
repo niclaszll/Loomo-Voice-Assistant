@@ -77,13 +77,14 @@ dependencies {
     kapt 'com.google.dagger:dagger-android-processor:2.25.2'
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
 
+    implementation project(':pocketsphinx-android-5prealpha-release')
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-repositories {
-    maven {
-        url "https://nexus-repository.snips.ai/repository/snips-maven-releases/"
-    }
-}
+
+ant.importBuild 'assets.xml'
+preBuild.dependsOn(list, checksum)
+clean.dependsOn(clean_assets)

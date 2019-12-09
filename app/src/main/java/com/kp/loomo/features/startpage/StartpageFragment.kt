@@ -47,6 +47,14 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         return container?.inflate(R.layout.fragment_startpage)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        button_manual.setOnClickListener {
+            presenter.initManualSpeech()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         presenter.takeView(this)
