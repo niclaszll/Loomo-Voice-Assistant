@@ -18,7 +18,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
    and one word that is required for method switchSearch - it will bring recognizer
    back to listening for the keyphrase*/
     private var keywordSearch = "wakeup"
-    private var menuSearch = "menu"
+    private var intentSearch = "intent"
 
     /* Keyword we are looking for to activate recognition */
     private var keyphrase = "activate"
@@ -69,11 +69,13 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
             .recognizer
 
         recognizer?.addListener(this)
+
         // Create keyword-activation search.
         recognizer?.addKeyphraseSearch(keywordSearch, keyphrase)
+
         // Create your custom grammar-based search
-        val menuGrammar = File(assetsDir, "mymenu.gram")
-        recognizer?.addGrammarSearch(menuSearch, menuGrammar)
+        val intentGrammar = File(assetsDir, "intents.gram")
+        recognizer?.addGrammarSearch(intentSearch, intentGrammar)
     }
 
 
@@ -86,32 +88,30 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         }
     }
 
+    /**
+     * In partial result we get quick updates about current hypothesis. In
+     * keyword spotting mode we can react here, in other modes we need to wait
+     * for final result in onResult.
+     */
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
         when (hypothesis.hypstr) {
             keyphrase -> {
-                switchSearch(menuSearch)
-            }
-            "hello" -> {
-                Log.d(TAG, "Hello to you too!")
-            }
-            "good morning" -> {
-                Log.d(TAG, "Good morning to you too!")
+                Log.d(TAG, "Keyphrase recognized")
+                switchSearch(intentSearch)
             }
             else -> {
                 Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
+                switchSearch(keywordSearch)
             }
         }
-    }
-
-    override fun onEndOfSpeech() {
-        recognizer?.cancel()
-        //if (recognizer?.searchName.equals(KWS_SEARCH)) switchSearch(KWS_SEARCH)
     }
 
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
+
+            // handle intents here
         }
     }
 
@@ -124,6 +124,10 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     }
 
     override fun onBeginningOfSpeech() {}
+
+    override fun onEndOfSpeech() {
+        if (recognizer?.searchName.equals(keywordSearch)) switchSearch(keywordSearch)
+    }
 
     fun shutdown() {
         if (recognizer != null) {
