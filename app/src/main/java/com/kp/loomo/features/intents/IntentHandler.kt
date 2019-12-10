@@ -1,7 +1,7 @@
-package com.kp.loomo.features.speech
+package com.kp.loomo.features.intents
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
-import com.kp.loomo.features.speech.handler.CalculatorHandler
+import com.kp.loomo.features.intents.handler.CalculatorHandler
 
 /**
  * Intent handler that decides which specific handler should continue

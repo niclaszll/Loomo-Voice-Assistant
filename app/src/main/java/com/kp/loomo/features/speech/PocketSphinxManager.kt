@@ -15,8 +15,8 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     RecognitionListener {
 
     /* We only need the keyphrase to start recognition, one menu with list of choices,
-   and one word that is required for method switchSearch - it will bring recognizer
-   back to listening for the keyphrase*/
+       and one word that is required for method switchSearch - it will bring recognizer
+       back to listening for the keyphrase*/
     private var keywordSearch = "wakeup"
     private var intentSearch = "intent"
 
