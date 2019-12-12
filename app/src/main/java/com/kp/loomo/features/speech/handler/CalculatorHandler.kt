@@ -11,6 +11,10 @@ class CalculatorHandler : IntentMessageHandler {
         return intentMessage.queryResult.intent.displayName == "calculate"
     }
 
+    /**
+     * if in fun to decide which operation is asked
+     *
+     */
     override fun handle(intentMessage: DetectIntentResponse): String {
 
         var sum = 0.0
