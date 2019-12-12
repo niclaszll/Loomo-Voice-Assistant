@@ -8,7 +8,6 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.dialogflow.v2beta1.*
 import com.kp.loomo.R
-import com.kp.loomo.features.startpage.StartpagePresenter
 import java.io.InputStream
 import java.util.*
 import javax.inject.Inject
@@ -22,16 +21,16 @@ class DialogFlowManager @Inject constructor(private var applicationContext: Cont
     private var session: SessionName? = null
     private val uuid = UUID.randomUUID().toString()
 
-    private var startpagePresenter: StartpagePresenter? = null
+    private var responseHandler: SpeechResponseHandler? = null
 
     /**
      * Initialize Dialogflow client
      */
-    fun init(presenter: StartpagePresenter) {
+    fun init(handler: SpeechResponseHandler) {
 
         Log.d(TAG, "initializing Dialogflow client ...")
 
-        startpagePresenter = presenter
+        responseHandler = handler
 
         try {
             val stream: InputStream = applicationContext.resources.openRawResource(R.raw.credential)
@@ -59,7 +58,7 @@ class DialogFlowManager @Inject constructor(private var applicationContext: Cont
 
         if (response != null) {
 
-            startpagePresenter?.handleResponse(response)
+            responseHandler?.handleDialogflowResponse(response)
 
         } else {
             Log.d(TAG, "Dialogflow Response is Null")

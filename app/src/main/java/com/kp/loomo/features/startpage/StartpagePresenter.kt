@@ -36,7 +36,7 @@ class StartpagePresenter @Inject constructor(
     private var dialogFlowManager: DialogFlowManager,
     private var robotManager: RobotManager
 ) :
-    StartpageContract.Presenter {
+    StartpageContract.Presenter, SpeechResponseHandler {
 
     @Nullable
     private var startpageFragment: StartpageContract.View? = null
@@ -66,15 +66,16 @@ class StartpagePresenter @Inject constructor(
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        if (hasInternetConnection()) {
+        robotManager.initRobotConnection(this)
 
+        if (hasInternetConnection()) {
             // online
-            robotManager.initRobotConnection(this)
             dialogFlowManager.init(this)
 
         } else {
             // offline
-            pocketSphinxManager.runRecognizerSetup()
+            pocketSphinxManager.initPocketSphinx(this)
+            showText("Say 'activate'")
         }
     }
 
@@ -96,7 +97,7 @@ class StartpagePresenter @Inject constructor(
     }
 
     /**
-     * Start audio recording
+     * Start audio recording and analyze it with Google STT
      */
     fun startAudioRecording() {
 
@@ -168,8 +169,7 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
-    fun handleResponse(response : DetectIntentResponse) {
-
+    override fun handleDialogflowResponse(response : DetectIntentResponse) {
         val botReply = IntentHandler.handleIntent(response)
 
         startpageFragment?.showText(botReply)
@@ -179,7 +179,11 @@ class StartpagePresenter @Inject constructor(
         } else {
             robotManager.speak(botReply)
         }
+    }
 
+    override fun handlePocketSphinxResponse(response: String) {
+        // handle Pocket Sphinx response
+        Log.d(TAG, "Handling PocketSphinx response: $response")
     }
 
     fun showText (text: String) {
@@ -188,7 +192,6 @@ class StartpagePresenter @Inject constructor(
 
     private fun hasInternetConnection(): Boolean {
         val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
-
         return activeNetwork?.isConnectedOrConnecting == true
     }
 

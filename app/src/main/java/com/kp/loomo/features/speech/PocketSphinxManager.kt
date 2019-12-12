@@ -26,7 +26,17 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     /* Recognition object */
     private var recognizer: SpeechRecognizer? = null
 
-    // TODO: make toplevel class
+    private var responseHandler: SpeechResponseHandler? = null
+
+
+    fun initPocketSphinx(handler: SpeechResponseHandler) {
+
+        Log.d(TAG, "initializing PocketSphinx ...")
+        responseHandler = handler
+
+        runRecognizerSetup()
+    }
+
     @SuppressLint("StaticFieldLeak")
     fun runRecognizerSetup() {
         // Recognizer initialization is a time-consuming and it involves IO,
@@ -111,7 +121,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
 
-            // handle intents here
+            responseHandler?.handlePocketSphinxResponse(hypothesis.hypstr)
         }
     }
 

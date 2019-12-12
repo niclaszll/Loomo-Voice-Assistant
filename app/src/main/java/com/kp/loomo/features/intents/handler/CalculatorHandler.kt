@@ -18,7 +18,6 @@ class CalculatorHandler : IntentMessageHandler {
 
         val sum = firstNumber + secondNumber
 
-
         return "${sum.toInt()}, right?"
     }
 }
