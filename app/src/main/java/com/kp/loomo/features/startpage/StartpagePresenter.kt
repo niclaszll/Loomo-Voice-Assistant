@@ -38,7 +38,8 @@ class StartpagePresenter @Inject constructor(
     private var pocketSphinxManager: PocketSphinxManager,
     private var connectivityManager: ConnectivityManager,
     private var dialogFlowManager: DialogFlowManager,
-    private var robotManager: RobotManager
+    private var robotManager: RobotManager,
+    private var intentHandler: IntentHandler
 ) :
     StartpageContract.Presenter, SpeechResponseHandler {
 
@@ -55,7 +56,7 @@ class StartpagePresenter @Inject constructor(
     private var mSpeechClient: SpeechClient? = null
 
     var responseObserver: ResponseObserver<StreamingRecognizeResponse>? = null
-    var requestStream: ClientStream<StreamingRecognizeRequest>? = null
+    private var requestStream: ClientStream<StreamingRecognizeRequest>? = null
 
     private var mTTS: TextToSpeech? = null
     private var isManual = false
@@ -192,7 +193,7 @@ class StartpagePresenter @Inject constructor(
     }
 
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
-        val botReply = IntentHandler.handleIntent(response)
+        val botReply = intentHandler.handleIntent(response)
 
         startpageFragment?.showText(botReply)
 
