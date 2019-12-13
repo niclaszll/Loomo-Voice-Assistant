@@ -2,10 +2,9 @@ package com.kp.loomo.features.speech
 
 import android.os.AsyncTask
 import com.google.cloud.dialogflow.v2beta1.*
-import com.kp.loomo.features.startpage.StartpagePresenter
 
 class RequestJavaV2Task internal constructor(
-    private var startpagePresenter: StartpagePresenter,
+    private var dialogFlowManager: DialogFlowManager,
     private val session: SessionName,
     private val sessionsClient: SessionsClient,
     private val queryInput: QueryInput
@@ -27,7 +26,7 @@ class RequestJavaV2Task internal constructor(
     }
 
     override fun onPostExecute(response: DetectIntentResponse?) {
-        startpagePresenter.handleDialogflowResponse(response)
+        dialogFlowManager.handleDialogflowResponse(response)
     }
 
 }

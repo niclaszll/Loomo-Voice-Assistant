@@ -1,4 +1,4 @@
-package com.kp.loomo.features.speech
+package com.kp.loomo.features.intents
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 
