@@ -8,16 +8,20 @@ import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.annotation.Nullable
-import com.google.api.gax.rpc.ApiStreamObserver
+import com.google.api.gax.rpc.ClientStream
+import com.google.api.gax.rpc.ResponseObserver
+import com.google.api.gax.rpc.StreamController
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.dialogflow.v2beta1.*
+import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.google.cloud.speech.v1.*
 import com.kp.loomo.R
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
-import com.kp.loomo.features.speech.*
 import com.kp.loomo.features.speech.AudioEmitter
+import com.kp.loomo.features.speech.DialogFlowManager
+import com.kp.loomo.features.speech.PocketSphinxManager
+import com.kp.loomo.features.speech.SpeechResponseHandler
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -48,14 +52,10 @@ class StartpagePresenter @Inject constructor(
     private var mAudioEmitter: AudioEmitter? = null
 
     // Speech client
-    private val mSpeechClient by lazy {
-        applicationContext.resources.openRawResource(R.raw.credential).use {
-            SpeechClient.create(
-                SpeechSettings.newBuilder()
-                    .setCredentialsProvider { GoogleCredentials.fromStream(it) }
-                    .build())
-        }
-    }
+    private var mSpeechClient: SpeechClient? = null
+
+    var responseObserver: ResponseObserver<StreamingRecognizeResponse>? = null
+    var requestStream: ClientStream<StreamingRecognizeRequest>? = null
 
     private var mTTS: TextToSpeech? = null
     private var isManual = false
@@ -107,42 +107,64 @@ class StartpagePresenter @Inject constructor(
         val isFirstRequest = AtomicBoolean(true)
         mAudioEmitter = AudioEmitter()
 
-        // start streaming the data to the server and collect responses
-        val requestStream = mSpeechClient.streamingRecognizeCallable()
-            .bidiStreamingCall(object : ApiStreamObserver<StreamingRecognizeResponse> {
-                override fun onNext(value: StreamingRecognizeResponse) {
-                    // run on ui thread
-                    handler.post {
-                        when {
-                            // handle recognized text
-                            value.resultsCount > 0 -> {
-                                startpageFragment!!.showText(
-                                    value.getResults(0).getAlternatives(
-                                        0
-                                    ).transcript
-                                )
-                                //send to Dialogflow
-                                dialogFlowManager.sendToDialogflow(
-                                    value.getResults(0).getAlternatives(
-                                        0
-                                    ).transcript
-                                )
+        if (mSpeechClient == null) {
+            mSpeechClient = SpeechClient.create(SpeechSettings.newBuilder()
+                .setCredentialsProvider {
+                    GoogleCredentials.fromStream(
+                        applicationContext.resources.openRawResource(
+                            R.raw.credential
+                        )
+                    )
+                }
+                .build())
+        }
 
-                            }
-                            else -> Log.d(TAG, "No Response!")
+        responseObserver = object : ResponseObserver<StreamingRecognizeResponse> {
+
+            override fun onStart(controller: StreamController?) {
+                Log.d(TAG, "start stream")
+            }
+
+            override fun onError(t: Throwable) {
+                Log.e(TAG, "an error occurred", t)
+            }
+
+            override fun onComplete() {
+                Log.d(TAG, "stream closed")
+                mAudioEmitter?.stop()
+                mSpeechClient!!.close()
+                mSpeechClient = null
+
+            }
+
+            override fun onResponse(response: StreamingRecognizeResponse?) {
+                handler.post {
+                    when {
+                        // handle recognized text
+                        response!!.resultsCount > 0 -> {
+                            startpageFragment!!.showText(
+                                response.getResults(0).getAlternatives(
+                                    0
+                                ).transcript
+                            )
+                            //send to Dialogflow
+                            dialogFlowManager.sendToDialogflow(
+                                response.getResults(0).getAlternatives(
+                                    0
+                                ).transcript
+                            )
+                            // stop audio recording and stream after answer
+                            onComplete()
                         }
                     }
                 }
 
-                override fun onError(t: Throwable) {
-                    Log.e(TAG, "an error occurred", t)
-                }
+            }
+        }
 
-                override fun onCompleted() {
-                    Log.d(TAG, "stream closed")
-                    mAudioEmitter?.stop()
-                }
-            })
+        // start streaming the data to the server and collect responses
+        requestStream = mSpeechClient!!.streamingRecognizeCallable()
+            .splitCall(responseObserver, null)
 
         // monitor the input stream and send requests as audio data becomes available
         mAudioEmitter?.start { bytes ->
@@ -165,11 +187,11 @@ class StartpagePresenter @Inject constructor(
             }
 
             // send the next request
-            requestStream.onNext(builder.build())
+            requestStream!!.send(builder.build())
         }
     }
 
-    override fun handleDialogflowResponse(response : DetectIntentResponse) {
+    override fun handleDialogflowResponse(response: DetectIntentResponse) {
         val botReply = IntentHandler.handleIntent(response)
 
         startpageFragment?.showText(botReply)
@@ -186,7 +208,7 @@ class StartpagePresenter @Inject constructor(
         Log.d(TAG, "Handling PocketSphinx response: $response")
     }
 
-    fun showText (text: String) {
+    fun showText(text: String) {
         handler.post { startpageFragment?.showText(text) }
     }
 
@@ -203,7 +225,7 @@ class StartpagePresenter @Inject constructor(
         // cleanup
         mAudioEmitter?.stop()
         mAudioEmitter = null
-        mSpeechClient.shutdown()
+        mSpeechClient!!.shutdown()
         startpageFragment = null
 
         pocketSphinxManager.shutdown()
