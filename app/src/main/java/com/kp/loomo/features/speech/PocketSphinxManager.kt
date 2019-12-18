@@ -14,14 +14,7 @@ private const val TAG = "PocketSphinx"
 class PocketSphinxManager @Inject constructor(private var applicationContext: Context) :
     RecognitionListener {
 
-    /* We only need the keyphrase to start recognition, one menu with list of choices,
-       and one word that is required for method switchSearch - it will bring recognizer
-       back to listening for the keyphrase*/
-    private var keywordSearch = "wakeup"
     private var intentSearch = "intent"
-
-    /* Keyword we are looking for to activate recognition */
-    private var keyphrase = "activate"
 
     /* Recognition object */
     private var recognizer: SpeechRecognizer? = null
@@ -57,7 +50,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
                 if (result != null) {
                     Log.d(TAG, result.message!!)
                 } else {
-                    switchSearch(keywordSearch)
+                    startNewSearch(intentSearch)
                 }
             }
         }.execute()
@@ -73,29 +66,19 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
                     "cmudict-en-us.dict"
                 )
             )
-            // Disable this line if you don't want recognizer to save raw
-            // audio files to app's storage
-            //.setRawLogDir(assetsDir)
             .recognizer
 
         recognizer?.addListener(this)
 
-        // Create keyword-activation search.
-        recognizer?.addKeyphraseSearch(keywordSearch, keyphrase)
-
-        // Create your custom grammar-based search
+        // Create custom grammar-based search
         val intentGrammar = File(assetsDir, "intents.gram")
         recognizer?.addGrammarSearch(intentSearch, intentGrammar)
     }
 
 
-    private fun switchSearch(searchName: String) {
+    private fun startNewSearch(searchName: String) {
         recognizer?.stop()
-        if (searchName == keywordSearch) {
-            recognizer?.startListening(searchName)
-        } else {
-            recognizer?.startListening(searchName, 10000)
-        }
+        recognizer?.startListening(searchName, 10000)
     }
 
     /**
@@ -105,22 +88,15 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      */
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
-        when (hypothesis.hypstr) {
-            keyphrase -> {
-                Log.d(TAG, "Keyphrase recognized")
-                switchSearch(intentSearch)
-            }
-            else -> {
-                Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
-                switchSearch(keywordSearch)
-            }
-        }
+        Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
+        startNewSearch(intentSearch)
     }
 
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
-
+            Log.d(TAG, "onResult " + hypothesis.hypstr)
+            recognizer?.stop()
             responseHandler?.handlePocketSphinxResponse(hypothesis.hypstr)
         }
     }
@@ -130,13 +106,13 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     }
 
     override fun onTimeout() {
-        switchSearch(keywordSearch)
+        startNewSearch(intentSearch)
     }
 
     override fun onBeginningOfSpeech() {}
 
     override fun onEndOfSpeech() {
-        if (recognizer?.searchName.equals(keywordSearch)) switchSearch(keywordSearch)
+        if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
     }
 
     fun shutdown() {
