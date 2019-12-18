@@ -75,8 +75,8 @@ class StartpagePresenter @Inject constructor(
 
         } else {
             // offline
-            pocketSphinxManager.initPocketSphinx(this)
-            showText("Say 'activate'")
+            // pocketSphinxManager.initPocketSphinx(this)
+            // showText("Say 'activate'")
         }
     }
 
@@ -94,7 +94,14 @@ class StartpagePresenter @Inject constructor(
             }
         })
 
-        startAudioRecording()
+        if (hasInternetConnection()) {
+            // online
+            startAudioRecording()
+
+        } else {
+            // offline
+            pocketSphinxManager.initPocketSphinx(this)
+        }
     }
 
     /**
@@ -206,6 +213,12 @@ class StartpagePresenter @Inject constructor(
 
     override fun handlePocketSphinxResponse(response: String) {
         // handle Pocket Sphinx response
+        when {
+            response.startsWith("drive") -> {
+                val direction = response.substring(response.lastIndexOf(" ")+1)
+                mTTS?.speak("driving $direction", TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+            }
+        }
         Log.d(TAG, "Handling PocketSphinx response: $response")
     }
 
