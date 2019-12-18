@@ -24,7 +24,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
 
     fun initPocketSphinx(handler: SpeechResponseHandler) {
 
-        Log.d(TAG, "initializing PocketSphinx ...")
+        Log.d(TAG, "Initializing PocketSphinx ...")
         responseHandler = handler
 
         runRecognizerSetup()
