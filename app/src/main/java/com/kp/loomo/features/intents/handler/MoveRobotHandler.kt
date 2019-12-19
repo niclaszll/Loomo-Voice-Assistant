@@ -20,4 +20,21 @@ class MoveRobotHandler constructor(private var robotManager: RobotManager) : Int
 
         return "Moving $direction"
     }
+
+    override fun canHandleOffline(intentMessage: String): Boolean {
+        return intentMessage.startsWith("drive")
+    }
+
+    override fun handleOffline(intentMessage: String): String {
+        when {
+            intentMessage.startsWith("drive") -> {
+                val direction = intentMessage.substring(intentMessage.lastIndexOf(" ")+1)
+
+                // TODO call drive in robotManager
+
+                return "Driving $direction"
+            }
+        }
+        return "I want to drive, but don't know where. Please try again"
+    }
 }

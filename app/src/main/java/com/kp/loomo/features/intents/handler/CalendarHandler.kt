@@ -17,4 +17,12 @@ class CalendarHandler : IntentMessageHandler {
         val message = intentMessage.queryResult.fulfillmentText
         return "${message}"
     }
+
+    override fun canHandleOffline(intentMessage: String): Boolean {
+        return false
+    }
+
+    override fun handleOffline(intentMessage: String): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }

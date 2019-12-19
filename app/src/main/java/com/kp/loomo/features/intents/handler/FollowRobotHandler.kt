@@ -20,4 +20,12 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
 
         return "Following"
     }
+
+    override fun canHandleOffline(intentMessage: String): Boolean {
+        return false
+    }
+
+    override fun handleOffline(intentMessage: String): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }

@@ -22,14 +22,31 @@ class IntentHandler @Inject constructor(private var robotManager: RobotManager) 
         listOfHandler.add(CalendarHandler())
     }
 
+    /**
+     * Check for online intent handlers and handle if possible
+     */
     fun handleIntent(intentMessage: DetectIntentResponse): String {
 
-        // iterate over each handler and check if handler can handler intentMessage
+        // iterate over each handler and check if handler can handle intentMessage
         listOfHandler.forEach {
             if (it.canHandle(intentMessage)) {
                 return it.handle(intentMessage)
             }
         }
         return "I understood '${intentMessage.queryResult.queryText}'. Unfortunately I don't know what to do. :("
+    }
+
+    /**
+     * Check for offline intent handlers and handle if possible
+     */
+    fun handleOfflineIntent(intentMessage: String): String {
+
+        // iterate over each handler and check if handler can handle response
+        listOfHandler.forEach {
+            if (it.canHandleOffline(intentMessage)) {
+                return it.handleOffline(intentMessage)
+            }
+        }
+        return "I understood '${intentMessage}'. Unfortunately I don't know what to do. :("
     }
 }

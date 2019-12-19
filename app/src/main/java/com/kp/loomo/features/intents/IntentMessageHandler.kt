@@ -6,4 +6,7 @@ interface IntentMessageHandler {
 
     fun canHandle(intentMessage: DetectIntentResponse): Boolean
     fun handle(intentMessage: DetectIntentResponse): String
+
+    fun canHandleOffline(intentMessage: String): Boolean
+    fun handleOffline(intentMessage: String): String
 }
