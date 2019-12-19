@@ -1,10 +1,7 @@
 package com.kp.loomo.features.intents
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
-import com.kp.loomo.features.intents.handler.CalculatorHandler
-import com.kp.loomo.features.intents.handler.CalendarHandler
-import com.kp.loomo.features.intents.handler.FollowRobotHandler
-import com.kp.loomo.features.intents.handler.MoveRobotHandler
+import com.kp.loomo.features.intents.handler.*
 import com.kp.loomo.features.robot.RobotManager
 import javax.inject.Inject
 
@@ -20,6 +17,7 @@ class IntentHandler @Inject constructor(private var robotManager: RobotManager) 
         listOfHandler.add(MoveRobotHandler(robotManager))
         listOfHandler.add(FollowRobotHandler(robotManager))
         listOfHandler.add(CalendarHandler())
+        listOfHandler.add(SmallTalkHandler())
     }
 
     fun handleIntent(intentMessage: DetectIntentResponse): String {
