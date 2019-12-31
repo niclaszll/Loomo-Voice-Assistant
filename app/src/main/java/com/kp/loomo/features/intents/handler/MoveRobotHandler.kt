@@ -9,6 +9,9 @@ private val TAG = "MoveRobotHandler"
 
 class MoveRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
 
+    // possible commands, extend here and in intent grammar
+    private val commands = arrayOf("drive", "go", "move")
+
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "moveRobot"
     }
@@ -18,21 +21,35 @@ class MoveRobotHandler constructor(private var robotManager: RobotManager) : Int
         val direction = intentMessage.queryResult.parameters.fieldsMap["direction"]!!.stringValue
         robotManager.drive(direction)
 
-        return "Moving $direction"
+        return "Driving $direction"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
-        return intentMessage.startsWith("drive")
+
+        for (cmd in commands) {
+            if (intentMessage.startsWith(cmd)) return true
+        }
+        return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        when {
-            intentMessage.startsWith("drive") -> {
-                val direction = intentMessage.substring(intentMessage.lastIndexOf(" ")+1)
 
-                // TODO call drive in robotManager
+        for (cmd in commands) {
+            if (intentMessage.startsWith(cmd)) {
+                val direction = intentMessage.substringAfter(cmd).trim()
+                var parsedDirection = ""
 
-                return "Driving $direction"
+                // map direction
+                when (direction) {
+                    "right" -> parsedDirection = "right"
+                    "left" -> parsedDirection = "left"
+                    "backward", "backwards", "back" -> parsedDirection = "backward"
+                    "forward" -> parsedDirection = "forward"
+                }
+
+                // robotManager.drive(parsedDirection)
+
+                return "Driving $parsedDirection"
             }
         }
         return "I want to drive, but don't know where. Please try again"

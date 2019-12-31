@@ -1,4 +1,7 @@
 #JSGF V1.0;
 
-grammar mymenu;
-public <smart> = drive (forward | backward | left | right);
+grammar intents;
+
+private <cmd> = (drive | move | go );
+private <direction> = (forward | backward | backwards | back | left | right);
+public <result> = <cmd> <direction>;
