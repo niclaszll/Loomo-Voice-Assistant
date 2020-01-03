@@ -33,7 +33,8 @@ class IntentHandler @Inject constructor(private var robotManager: RobotManager) 
                 return it.handle(intentMessage)
             }
         }
-        return "I understood '${intentMessage.queryResult.queryText}'. Unfortunately I don't know what to do. :("
+        return intentMessage.queryResult.fulfillmentText
+        // return "I understood '${intentMessage.queryResult.queryText}'. Unfortunately I don't know what to do. :("
     }
 
     /**
