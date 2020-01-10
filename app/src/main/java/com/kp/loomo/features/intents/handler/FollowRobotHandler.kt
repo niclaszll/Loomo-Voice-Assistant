@@ -15,10 +15,17 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
 
     override fun handle(intentMessage: DetectIntentResponse): String {
 
-        val cmd = intentMessage.queryResult.parameters.fieldsMap["CommandFollow"]!!.stringValue
-        robotManager.actionInitiateTrack()
+        val cmd = intentMessage.queryResult.parameters.fieldsMap["FollowCommand"]!!.stringValue
 
-        return "Following"
+        if (cmd == "Start") {
+            robotManager.actionInitiateTrack()
+            return "Following"
+        } else if (cmd == "Stop"){
+            robotManager.actionTerminateTrack()
+            return "I'm no longer following"
+        }
+
+        return "I didn't understand if I should really follow you"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {

@@ -356,7 +356,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     /**
      * Reset head when timeout
      */
-    private fun resetHead() {
+    fun resetHead() {
         mHead!!.mode = Head.MODE_SMOOTH_TACKING
         mHead!!.setWorldYaw(0f)
         mHead!!.setWorldPitch(0.7f)
