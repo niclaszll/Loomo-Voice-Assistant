@@ -287,7 +287,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     /**
      * Start wakeup mode
      */
-    private fun startWakeUpListener() {
+    fun startWakeUpListener() {
         if (mRecognizer == null) {
             return
         }
@@ -320,6 +320,18 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             "backward" -> {
                 mBase?.setLinearVelocity(-1.0f)
                 mBase?.setAngularVelocity(-0.15f)
+            }
+            "right" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(-1.5708f)
+            }
+            "left" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(1.5708f)
+            }
+            "turn" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(3.14159f)
             }
         }
     }
