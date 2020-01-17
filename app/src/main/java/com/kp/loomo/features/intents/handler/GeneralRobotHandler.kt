@@ -2,21 +2,27 @@ package com.kp.loomo.features.intents.handler
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
+import com.kp.loomo.features.robot.RobotManager
+import javax.inject.Inject
 
-class CalendarHandler : IntentMessageHandler {
+private val TAG = "GeneralRobotHandler"
 
-    private val tag = "CalendarHandler"
+class GeneralRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
-        // return intentMessage.queryResult.intent.displayName == "Calendar"
-        return false
+        return intentMessage.queryResult.intent.displayName == "GeneralRobot"
     }
+
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val date1 = intentMessage.queryResult.parameters.fieldsMap["date"]!!.numberValue
-        val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
-        val time1 = intentMessage.queryResult.parameters.fieldsMap["time"]!!.numberValue
-        val message = intentMessage.queryResult.fulfillmentText
-        return "${message}"
+
+        val cmd = intentMessage.queryResult.parameters.fieldsMap["Command"]!!.stringValue
+
+        if (cmd == "Reset head") {
+            robotManager.resetHead()
+            return "Resetting head"
+        }
+
+        return "I didn't understand what to do"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
