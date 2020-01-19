@@ -12,11 +12,7 @@ class CalendarHandler : IntentMessageHandler {
         return false
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val date1 = intentMessage.queryResult.parameters.fieldsMap["date"]!!.numberValue
-        val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
-        val time1 = intentMessage.queryResult.parameters.fieldsMap["time"]!!.numberValue
-        val message = intentMessage.queryResult.fulfillmentText
-        return "${message}"
+        return ""
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
+import com.kp.loomo.features.robot.SystemManager
 import com.kp.loomo.features.startpage.StartpageFragment
 import dagger.Lazy
 import dagger.android.support.DaggerAppCompatActivity
@@ -17,12 +18,17 @@ class MainActivity : DaggerAppCompatActivity() {
     @Inject
     lateinit var startpageFragmentProvider: Lazy<StartpageFragment>
 
+    @Inject
+    lateinit var systemManager: SystemManager
+
     /**
      * Called when MainActivity is created
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        systemManager.setupSystemManager(window)
 
         if (savedInstanceState == null) {
             @Suppress("UNCHECKED_CAST")

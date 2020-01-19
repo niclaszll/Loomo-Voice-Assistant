@@ -2,6 +2,6 @@
 
 grammar intents;
 
-private <cmd> = (drive | move | go );
-private <direction> = (forward | backward | backwards | back | left | right);
-public <result> = <cmd> <direction>;
+private <move_robot> = (drive | move | go ) (forward | backward | backwards | back | left | right);
+private <follow> = [start | stop] (following | follow) [me];
+public <result> = <move_robot> | <direction>;
