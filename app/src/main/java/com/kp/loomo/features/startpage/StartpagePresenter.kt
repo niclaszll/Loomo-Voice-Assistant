@@ -6,6 +6,7 @@ import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import androidx.annotation.Nullable
 import com.google.api.gax.rpc.ClientStream
@@ -61,6 +62,8 @@ class StartpagePresenter @Inject constructor(
     private var mTTS: TextToSpeech? = null
     private var isManual = false
 
+    private var currentResponse: DetectIntentResponse? = null
+
     /**
      * Initialize all speech services
      */
@@ -68,6 +71,35 @@ class StartpagePresenter @Inject constructor(
         Log.d(TAG, "initializing speech...")
 
         robotManager.initRobotConnection(this)
+
+        // init TSS
+        mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+
+            if (status == TextToSpeech.SUCCESS) {
+                Log.e(TAG, "TTS initialized!")
+                mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onDone(utteranceId: String) {
+                        if (currentResponse!!.queryResult.allRequiredParamsPresent) {
+                            Log.d(TAG, "All params ready.")
+                            robotManager.startWakeUpListener()
+                        } else {
+                            Log.e(TAG, "Not enough params")
+                            startAudioRecording()
+                        }
+                    }
+
+                    override fun onError(utteranceId: String) {}
+                    override fun onStart(utteranceId: String) {}
+                })
+            } else {
+                Log.e(TAG, "Initilization Failed!")
+            }
+
+            if (status != TextToSpeech.ERROR) {
+                //if there is no error then set language
+                mTTS?.language = Locale.US
+            }
+        })
 
         if (hasInternetConnection()) {
             // online
@@ -199,15 +231,16 @@ class StartpagePresenter @Inject constructor(
      * Handle response from Dialogflow (online)
      */
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
+        currentResponse = response
         val botReply = intentHandler.handleIntent(response)
 
         startpageFragment?.showText(botReply)
 
-        if (isManual) {
-            mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-        } else {
-            robotManager.speak(botReply)
-        }
+        //if (isManual) {
+        mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        //} else {
+        //    robotManager.speak(botReply)
+        //}
     }
 
     /**
@@ -218,11 +251,11 @@ class StartpagePresenter @Inject constructor(
 
         showText(botReply)
 
-        if (isManual) {
-            mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-        } else {
-            robotManager.speak(botReply)
-        }
+        //if (isManual) {
+        mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        //} else {
+        //    robotManager.speak(botReply)
+        //}
     }
 
     /**
@@ -252,6 +285,13 @@ class StartpagePresenter @Inject constructor(
         mSpeechClient!!.shutdown()
         startpageFragment = null
         pocketSphinxManager.shutdown()
+        releaseTts()
     }
 
+    private fun releaseTts() {
+        if (mTTS != null) {
+            mTTS!!.stop()
+            mTTS!!.shutdown()
+        }
+    }
 }
