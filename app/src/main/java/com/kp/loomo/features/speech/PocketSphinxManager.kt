@@ -100,7 +100,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
         Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
-        startNewSearch(intentSearch)
+        //startNewSearch(intentSearch)
     }
 
     /**

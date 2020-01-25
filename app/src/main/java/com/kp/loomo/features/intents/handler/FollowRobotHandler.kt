@@ -31,7 +31,6 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
         return "I didn't understand if I should really follow you"
     }
 
-    //TODO: Test
     override fun canHandleOffline(intentMessage: String): Boolean {
 
         for (keyword in keywords) {
@@ -42,19 +41,18 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
         return false
     }
 
-    //TODO: Test
     override fun handleOffline(intentMessage: String): String {
-        var follow = true
+        var follow = false
 
         when (intentMessage) {
-            "start following me", "start following", "follow", "follow me" -> follow = true
+            "start following me", "start following", "follow", "follow me", "start follow" -> follow = true
         }
 
         return if (follow) {
-            robotManager.actionInitiateTrack()
+            //robotManager.actionInitiateTrack()
             "Following"
         } else {
-            robotManager.actionTerminateTrack()
+            //robotManager.actionTerminateTrack()
             "I'm no longer following"
         }
     }
