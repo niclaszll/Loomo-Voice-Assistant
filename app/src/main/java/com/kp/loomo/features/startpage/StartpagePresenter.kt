@@ -76,12 +76,14 @@ class StartpagePresenter @Inject constructor(
         mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
 
             if (status == TextToSpeech.SUCCESS) {
-                Log.e(TAG, "TTS initialized!")
+                Log.d(TAG, "TTS initialized!")
                 mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onDone(utteranceId: String) {
                         if (currentResponse!!.queryResult.allRequiredParamsPresent) {
                             Log.d(TAG, "All params ready.")
                             robotManager.startWakeUpListener()
+                            //TODO: Needed?
+                            currentResponse = null
                         } else {
                             Log.e(TAG, "Not enough params")
                             startAudioRecording()
@@ -98,6 +100,12 @@ class StartpagePresenter @Inject constructor(
             if (status != TextToSpeech.ERROR) {
                 //if there is no error then set language
                 mTTS?.language = Locale.US
+            }
+
+            if (!hasInternetConnection()) {
+                val offlineString = "Unfortunately I can't connect to the internet. My functionality might be limited."
+                showText(offlineString)
+                mTTS?.speak(offlineString, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
             }
         })
 
@@ -236,11 +244,7 @@ class StartpagePresenter @Inject constructor(
 
         startpageFragment?.showText(botReply)
 
-        //if (isManual) {
         mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-        //} else {
-        //    robotManager.speak(botReply)
-        //}
     }
 
     /**
@@ -251,11 +255,7 @@ class StartpagePresenter @Inject constructor(
 
         showText(botReply)
 
-        //if (isManual) {
         mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-        //} else {
-        //    robotManager.speak(botReply)
-        //}
     }
 
     /**

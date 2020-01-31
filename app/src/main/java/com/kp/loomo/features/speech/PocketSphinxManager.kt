@@ -109,7 +109,6 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
-            Log.d(TAG, "onResult " + hypothesis.hypstr)
             recognizer?.stop()
             responseHandler?.handlePocketSphinxResponse(hypothesis.hypstr)
         }
