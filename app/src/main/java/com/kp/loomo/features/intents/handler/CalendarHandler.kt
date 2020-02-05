@@ -30,7 +30,7 @@ class CalendarHandler : IntentMessageHandler {
         val message = intentMessage.queryResult.fulfillmentText
         return "${date1}, ${event},${message}"
     }
-<<<<<<< Updated upstream
+
 
     override fun canHandleOffline(intentMessage: String): Boolean {
         return false
@@ -40,7 +40,7 @@ class CalendarHandler : IntentMessageHandler {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
-=======
+
     class appointment{
         var eventl: String? = null
         var date: String? = null
@@ -60,7 +60,7 @@ class CalendarHandler : IntentMessageHandler {
         return e
     }
 
-}
+
 /**
  * Idea: Try to find the date, time and appointment in the speech
  * intent detected --> still a problem
@@ -80,4 +80,4 @@ class CalendarHandler : IntentMessageHandler {
  * oder array liste, die dann aber mit dem Tag abgleicht
  * also event,tag, zeit müssen da sein für einen Eintrag in die arrayliste
 */
->>>>>>> Stashed changes
+
