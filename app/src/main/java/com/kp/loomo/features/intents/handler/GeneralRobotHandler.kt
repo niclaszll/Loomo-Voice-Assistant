@@ -2,27 +2,27 @@ package com.kp.loomo.features.intents.handler
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
+import com.kp.loomo.features.robot.RobotManager
+import javax.inject.Inject
 
-private val TAG = "CalculatorHandler"
+private val TAG = "GeneralRobotHandler"
 
-class CalculatorHandler : IntentMessageHandler {
+class GeneralRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
-        return intentMessage.queryResult.intent.displayName == "calculate"
+        return intentMessage.queryResult.intent.displayName == "GeneralRobot"
     }
 
-    /**
-     * if in fun to decide which operation is asked
-     *
-     */
     override fun handle(intentMessage: DetectIntentResponse): String {
 
-        val firstNumber = intentMessage.queryResult.parameters.fieldsMap["number1"]!!.numberValue
-        val secondNumber = intentMessage.queryResult.parameters.fieldsMap["number2"]!!.numberValue
+        val cmd = intentMessage.queryResult.parameters.fieldsMap["Command"]!!.stringValue
 
-        val sum = firstNumber + secondNumber
+        if (cmd == "Reset head") {
+            robotManager.resetHead()
+            return "Resetting head"
+        }
 
-        return "${sum.toInt()}, right?"
+        return "I didn't understand what to do"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {

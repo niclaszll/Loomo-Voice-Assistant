@@ -16,7 +16,6 @@ private const val TAG = "DialogflowManager"
 
 class DialogFlowManager @Inject constructor(private var applicationContext: Context) {
 
-    // Java V2 Dialogflow
     private var sessionsClient: SessionsClient? = null
     private var session: SessionName? = null
     private val uuid = UUID.randomUUID().toString()
@@ -57,7 +56,6 @@ class DialogFlowManager @Inject constructor(private var applicationContext: Cont
         Log.d(TAG, "handling Dialogflow response")
 
         if (response != null) {
-
             responseHandler?.handleDialogflowResponse(response)
 
         } else {

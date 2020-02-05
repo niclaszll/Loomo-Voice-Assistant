@@ -27,8 +27,13 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     // Loomo SDK
     private var mRecognizer: Recognizer? = null
     private var mSpeaker: Speaker? = null
+
+    // Listeners
     private var mWakeupListener: WakeupListener? = null
     private var mTtsListener: TtsListener? = null
+    private var mPersonDetectListener: PersonDetectListener? = null
+    private var mPersonTrackingListener: PersonTrackingListener? = null
+    private var mPersonTrackingWithPlannerListener: PersonTrackingWithPlannerListener? = null
 
     private var mHeadPIDController = HeadPIDController()
     private var mVision: Vision? = null
@@ -44,6 +49,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     enum class RobotStateType {
         INITIATE_DETECT, TERMINATE_DETECT, INITIATE_TRACK, TERMINATE_TRACK
     }
+
     private var mDts: DTS? = null
 
     private var isVisionBind = false
@@ -54,19 +60,20 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     fun initRobotConnection(presenter: StartpagePresenter) {
         startpagePresenter = presenter
-        initWakeUp()
-        initRecognizer()
-        initSpeaker()
-        initBase()
-        initHead()
-        initVision()
+        initComponents()
+        initListeners()
     }
 
     /**
-     * Init Loomo recognizer
+     * Init Loomo components
      */
-    private fun initRecognizer() {
+    private fun initComponents() {
         mRecognizer = Recognizer.getInstance()
+        mBase = Base.getInstance()
+        mVision = Vision.getInstance()
+        mHead = Head.getInstance()
+        mSpeaker = Speaker.getInstance()
+
         mRecognizer!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 Log.d(TAG, "Recognition service onBind")
@@ -77,13 +84,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                 Log.d(TAG, "Recognition service onUnbind")
             }
         })
-    }
 
-    /**
-     * Init Loomo base
-     */
-    private fun initBase() {
-        mBase = Base.getInstance()
         mBase!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 isBaseBind = true
@@ -95,13 +96,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                 Log.d(TAG, "Base service onUnbind")
             }
         })
-    }
 
-    /**
-     * Init Loomo base
-     */
-    private fun initVision() {
-        mVision = Vision.getInstance()
         mVision!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 isVisionBind = true
@@ -116,13 +111,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                 Log.d(TAG, "Vision service onUnbind")
             }
         })
-    }
 
-    /**
-     * Init Loomo base
-     */
-    private fun initHead() {
-        mHead = Head.getInstance()
         mHead!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 isHeadBind = true
@@ -137,13 +126,24 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                 Log.d(TAG, "Head service onUnbind")
             }
         })
+
+        mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
+            override fun onBind() {
+                Log.d(TAG, "Speaker service onBind")
+                mSpeaker!!.setVolume(50)
+            }
+
+            override fun onUnbind(s: String) {
+                Log.d(TAG, "Speaker service onUnbind")
+            }
+        })
+
     }
 
     /**
-     * Init Loomo speaker
+     * Init listeners
      */
-    private fun initSpeaker() {
-
+    private fun initListeners() {
         mTtsListener = object : TtsListener {
             override fun onSpeechStarted(s: String) {
                 //s is speech content, callback this method when speech is starting.
@@ -168,24 +168,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
         }
 
-        mSpeaker = Speaker.getInstance()
-        mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
-            override fun onBind() {
-                Log.d(TAG, "Speaker service onBind")
-                mSpeaker!!.setVolume(50)
-            }
-
-            override fun onUnbind(s: String) {
-                Log.d(TAG, "Speaker service onUnbind")
-            }
-        })
-    }
-
-
-    /**
-     * Init Loomo wakeup
-     */
-    private fun initWakeUp() {
         mWakeupListener = object : WakeupListener {
             override fun onWakeupResult(wakeupResult: WakeupResult?) {
                 //show the wakeup result and wakeup angle.
@@ -208,12 +190,124 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
 
         }
+
+        mPersonDetectListener = object : PersonDetectListener {
+            override fun onPersonDetected(person: Array<DTSPerson>) {
+                if (person.isEmpty()) {
+                    if (System.currentTimeMillis() - startTime > TIME_OUT) {
+                        resetHead()
+                    }
+                    return
+                }
+                startTime = System.currentTimeMillis()
+                if (isServicesAvailable()) {
+                    mHead!!.mode = Head.MODE_ORIENTATION_LOCK
+                    mHeadPIDController.updateTarget(
+                        person[0].theta.toDouble(),
+                        person[0].drawingRect,
+                        480
+                    )
+                }
+            }
+
+            override fun onPersonDetectionResult(person: Array<DTSPerson>) {}
+            override fun onPersonDetectionError(errorCode: Int, message: String) {
+                mCurrentState = null
+                Log.d(TAG, "PersonDetectListener: $message")
+            }
+        }
+
+        // person tracking without obstacle avoidance
+        mPersonTrackingListener = object : PersonTrackingListener {
+            override fun onPersonTracking(person: DTSPerson) {
+                startTime = System.currentTimeMillis()
+                if (isServicesAvailable()) {
+                    mHead!!.mode = Head.MODE_ORIENTATION_LOCK
+                    mHeadPIDController.updateTarget(
+                        person.theta.toDouble(),
+                        person.drawingRect,
+                        480
+                    )
+                    mBase!!.controlMode = Base.CONTROL_MODE_FOLLOW_TARGET
+                    val personDistance = person.distance
+                    // There is a bug in DTS, while using person.getDistance(), please check the result
+                    // The correct distance is between 0.35 meters and 5 meters
+                    if (personDistance > 0.35 && personDistance < 5) {
+                        val followDistance = (personDistance - 1.2).toFloat()
+                        val theta = person.theta
+                        mBase!!.updateTarget(followDistance, theta)
+                    }
+                }
+            }
+
+            override fun onPersonTrackingResult(person: DTSPerson) {}
+            override fun onPersonTrackingError(errorCode: Int, message: String) {
+                mCurrentState = null
+                Log.d(TAG, "PersonTrackingListener: $message")
+            }
+        }
+
+        // person tracking with obstacle avoidance
+        mPersonTrackingWithPlannerListener =
+            object : PersonTrackingWithPlannerListener {
+                override fun onPersonTrackingWithPlannerResult(
+                    person: DTSPerson,
+                    baseControlCommand: BaseControlCommand
+                ) {
+                    startTime = System.currentTimeMillis()
+                    mHead!!.mode = Head.MODE_ORIENTATION_LOCK
+                    mHeadPIDController.updateTarget(
+                        person.theta.toDouble(),
+                        person.drawingRect,
+                        480
+                    )
+                    when (baseControlCommand.followState) {
+                        BaseControlCommand.State.NORMAL_FOLLOW -> setBaseVelocity(
+                            baseControlCommand.linearVelocity,
+                            baseControlCommand.angularVelocity
+                        )
+                        BaseControlCommand.State.HEAD_FOLLOW_BASE -> {
+                            mBase!!.controlMode = Base.CONTROL_MODE_FOLLOW_TARGET
+                            mBase!!.updateTarget(0f, person.theta)
+                        }
+                        BaseControlCommand.State.SENSOR_ERROR -> setBaseVelocity(0F, 0F)
+                    }
+                }
+
+                override fun onPersonTrackingWithPlannerError(
+                    errorCode: Int,
+                    message: String
+                ) {
+                    mCurrentState = null
+                    Log.d(TAG, "PersonTrackingWithPlannerListener: $message")
+                }
+            }
     }
 
+    /**
+     * Start wakeup mode
+     */
+    fun startWakeUpListener() {
+        if (mRecognizer == null) {
+            return
+        }
+        try {
+            mRecognizer!!.startWakeupMode(mWakeupListener)
+        } catch (e: Throwable) {
+            Log.e(TAG, "Exception: ", e)
+        }
+    }
+
+    /**
+     * Make Loomo speak
+     */
     fun speak(text: String) {
         mSpeaker!!.speak(text, mTtsListener!!)
     }
 
+    /**
+     * Make Loomo drive
+     */
     fun drive(direction: String) {
 
         mBase?.controlMode = Base.CONTROL_MODE_RAW
@@ -227,9 +321,24 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                 mBase?.setLinearVelocity(-1.0f)
                 mBase?.setAngularVelocity(-0.15f)
             }
+            "right" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(-1.5708f)
+            }
+            "left" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(1.5708f)
+            }
+            "turn" -> {
+                mBase?.setLinearVelocity(0f)
+                mBase?.setAngularVelocity(3.14159f)
+            }
         }
     }
 
+    /**
+     * Initiate tracking
+     */
     fun actionInitiateTrack() {
         if (mCurrentState === RobotStateType.INITIATE_TRACK) {
             return
@@ -243,6 +352,9 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         Log.d(TAG, "initiate tracking....")
     }
 
+    /**
+     * Stop tracking
+     */
     fun actionTerminateTrack() {
         if (mCurrentState === RobotStateType.INITIATE_TRACK) {
             mCurrentState = RobotStateType.TERMINATE_TRACK
@@ -254,126 +366,24 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     }
 
     /**
-     * reset head when timeout
+     * Reset head when timeout
      */
-    private fun resetHead() {
+    fun resetHead() {
         mHead!!.mode = Head.MODE_SMOOTH_TACKING
         mHead!!.setWorldYaw(0f)
         mHead!!.setWorldPitch(0.7f)
     }
 
+    /**
+     * Check if moving services available
+     */
     fun isServicesAvailable(): Boolean {
         return isVisionBind && isHeadBind && isBaseBind
     }
 
-    private fun startWakeUpListener() {
-        if (mRecognizer == null) {
-            return
-        }
-        try {
-            mRecognizer!!.startWakeupMode(mWakeupListener)
-        } catch (e: Throwable) {
-            Log.e(TAG, "Exception: ", e)
-        }
-    }
-
-    /**************************  detecting and tracking listeners    */
-    private val mPersonDetectListener: PersonDetectListener = object : PersonDetectListener {
-        override fun onPersonDetected(person: Array<DTSPerson>) {
-            if (person.isEmpty()) {
-                if (System.currentTimeMillis() - startTime > TIME_OUT) {
-                    resetHead()
-                }
-                return
-            }
-            startTime = System.currentTimeMillis()
-            if (isServicesAvailable()) {
-                mHead!!.mode = Head.MODE_ORIENTATION_LOCK
-                mHeadPIDController.updateTarget(
-                    person[0].theta.toDouble(),
-                    person[0].drawingRect,
-                    480
-                )
-            }
-        }
-
-        override fun onPersonDetectionResult(person: Array<DTSPerson>) {}
-        override fun onPersonDetectionError(errorCode: Int, message: String) {
-            mCurrentState = null
-            Log.d(TAG, "PersonDetectListener: $message")
-        }
-    }
-
     /**
-     * person tracking without obstacle avoidance
+     * Set Loomos base velocity
      */
-    private val mPersonTrackingListener: PersonTrackingListener = object : PersonTrackingListener {
-        override fun onPersonTracking(person: DTSPerson) {
-            startTime = System.currentTimeMillis()
-            if (isServicesAvailable()) {
-                mHead!!.mode = Head.MODE_ORIENTATION_LOCK
-                mHeadPIDController.updateTarget(
-                    person.theta.toDouble(),
-                    person.drawingRect,
-                    480
-                )
-                mBase!!.controlMode = Base.CONTROL_MODE_FOLLOW_TARGET
-                val personDistance = person.distance
-                // There is a bug in DTS, while using person.getDistance(), please check the result
-                // The correct distance is between 0.35 meters and 5 meters
-                if (personDistance > 0.35 && personDistance < 5) {
-                    val followDistance = (personDistance - 1.2).toFloat()
-                    val theta = person.theta
-                    mBase!!.updateTarget(followDistance, theta)
-                }
-            }
-        }
-
-        override fun onPersonTrackingResult(person: DTSPerson) {}
-        override fun onPersonTrackingError(errorCode: Int, message: String) {
-            mCurrentState = null
-            Log.d(TAG, "PersonTrackingListener: $message")
-        }
-    }
-
-    /**
-     * person tracking with obstacle avoidance
-     */
-    private val mPersonTrackingWithPlannerListener: PersonTrackingWithPlannerListener =
-        object : PersonTrackingWithPlannerListener {
-            override fun onPersonTrackingWithPlannerResult(
-                person: DTSPerson,
-                baseControlCommand: BaseControlCommand
-            ) {
-                startTime = System.currentTimeMillis()
-                mHead!!.mode = Head.MODE_ORIENTATION_LOCK
-                mHeadPIDController.updateTarget(
-                    person.theta.toDouble(),
-                    person.drawingRect,
-                    480
-                )
-                when (baseControlCommand.followState) {
-                    BaseControlCommand.State.NORMAL_FOLLOW -> setBaseVelocity(
-                        baseControlCommand.linearVelocity,
-                        baseControlCommand.angularVelocity
-                    )
-                    BaseControlCommand.State.HEAD_FOLLOW_BASE -> {
-                        mBase!!.controlMode = Base.CONTROL_MODE_FOLLOW_TARGET
-                        mBase!!.updateTarget(0f, person.theta)
-                    }
-                    BaseControlCommand.State.SENSOR_ERROR -> setBaseVelocity(0F, 0F)
-                }
-            }
-
-            override fun onPersonTrackingWithPlannerError(
-                errorCode: Int,
-                message: String
-            ) {
-                mCurrentState = null
-                Log.d(TAG, "PersonTrackingWithPlannerListener: $message")
-            }
-        }
-
     private fun setBaseVelocity(
         linearVelocity: Float,
         angularVelocity: Float

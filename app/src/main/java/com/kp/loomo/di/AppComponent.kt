@@ -15,7 +15,8 @@ import javax.inject.Singleton
         ActivityBindingModule::class,
         AndroidSupportInjectionModule::class,
         NetworkModule::class,
-        SpeechModule::class]
+        SpeechModule::class,
+        RobotModule::class]
 )
 interface AppComponent : AndroidInjector<App> {
 

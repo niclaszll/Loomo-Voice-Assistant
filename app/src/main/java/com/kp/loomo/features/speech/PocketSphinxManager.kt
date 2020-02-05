@@ -9,31 +9,33 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
-private const val TAG = "PocketSphinx"
+private const val TAG = "PocketSphinx Manager"
 
 class PocketSphinxManager @Inject constructor(private var applicationContext: Context) :
     RecognitionListener {
 
     private var intentSearch = "intent"
-
-    /* Recognition object */
     private var recognizer: SpeechRecognizer? = null
-
     private var responseHandler: SpeechResponseHandler? = null
 
-
+    /**
+     * Initialize PocketSphinx
+     */
     fun initPocketSphinx(handler: SpeechResponseHandler) {
 
-        Log.d(TAG, "initializing PocketSphinx ...")
+        Log.d(TAG, "Initializing PocketSphinx ...")
         responseHandler = handler
 
         runRecognizerSetup()
     }
 
+    /**
+     * Recognizer initialization is a time-consuming and it involves IO,
+     * so we execute it in async task
+     */
     @SuppressLint("StaticFieldLeak")
     fun runRecognizerSetup() {
-        // Recognizer initialization is a time-consuming and it involves IO,
-        // so we execute it in async task
+
         object : AsyncTask<Void?, Void?, Exception?>() {
             override fun doInBackground(vararg params: Void?): Exception? {
                 try {
@@ -56,6 +58,9 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         }.execute()
     }
 
+    /**
+     * Setup recognizers with listeners
+     */
     @Throws(IOException::class)
     private fun setupRecognizer(assetsDir: File) {
         recognizer = SpeechRecognizerSetup.defaultSetup()
@@ -73,9 +78,15 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         // Create custom grammar-based search
         val intentGrammar = File(assetsDir, "intents.gram")
         recognizer?.addGrammarSearch(intentSearch, intentGrammar)
+
+        Log.d(TAG, "recording ...")
+        responseHandler?.showText("I'm listening...")
     }
 
 
+    /**
+     * Start listening for intents
+     */
     private fun startNewSearch(searchName: String) {
         recognizer?.stop()
         recognizer?.startListening(searchName, 10000)
@@ -92,6 +103,9 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         startNewSearch(intentSearch)
     }
 
+    /**
+     * Handle detected result/hypothesis
+     */
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
@@ -101,10 +115,9 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         }
     }
 
-    override fun onError(error: Exception) {
-        Log.d(TAG, error.message!!)
-    }
-
+    /**
+     * Start listening again if timeout
+     */
     override fun onTimeout() {
         startNewSearch(intentSearch)
     }
@@ -115,6 +128,13 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
     }
 
+    override fun onError(error: Exception) {
+        Log.d(TAG, error.message!!)
+    }
+
+    /**
+     * Shutdown PocketSphinx
+     */
     fun shutdown() {
         if (recognizer != null) {
             recognizer?.cancel()

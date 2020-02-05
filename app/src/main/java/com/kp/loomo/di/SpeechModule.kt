@@ -24,18 +24,4 @@ class SpeechModule {
     fun provideDialogflow(context: Context): DialogFlowManager {
         return DialogFlowManager(context)
     }
-
-    // TODO move to extra module for robot
-    @Provides
-    @Singleton
-    fun provideRobotManager(context: Context): RobotManager {
-        return RobotManager(context)
-    }
-
-    // TODO move to extra module for handler
-    @Provides
-    @Singleton
-    fun provideMoveRobotHandler(robotManager: RobotManager): IntentHandler {
-        return IntentHandler(robotManager)
-    }
 }
