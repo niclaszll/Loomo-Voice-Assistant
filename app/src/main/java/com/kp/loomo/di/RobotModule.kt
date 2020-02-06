@@ -4,6 +4,7 @@ import android.content.Context
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
+import com.kp.loomo.features.robot.TimerManager
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -19,13 +20,19 @@ class RobotModule {
 
     @Provides
     @Singleton
-    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager): IntentHandler {
-        return IntentHandler(robotManager, systemSettingsManager)
+    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager): IntentHandler {
+        return IntentHandler(robotManager, systemSettingsManager, timeManager)
     }
 
     @Provides
     @Singleton
     fun provideSystemManager(context: Context): SystemSettingsManager {
         return SystemSettingsManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTimerManager(): TimerManager {
+        return TimerManager()
     }
 }

@@ -9,7 +9,7 @@ import javax.inject.Inject
 import kotlin.math.roundToInt
 
 
-class SystemSettingsManager @Inject constructor(private var applicationContext: Context) {
+class SystemSettingsManager @Inject constructor(applicationContext: Context) {
 
     private var window: Window? = null
     private val audioManager =

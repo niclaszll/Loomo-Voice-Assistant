@@ -5,12 +5,13 @@ import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.handler.*
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
+import com.kp.loomo.features.robot.TimerManager
 import javax.inject.Inject
 
 /**
  * Intent handler that decides which specific handler should continue
  */
-class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager) {
+class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager) {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
     // add all handlers here
@@ -21,6 +22,7 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(GeneralRobotHandler(robotManager))
         listOfHandler.add(CalendarHandler())
         listOfHandler.add(SystemHandler(systemSettingsManager))
+        listOfHandler.add(TimerHandler(timeManager))
     }
 
     /**
@@ -37,7 +39,6 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
             }
         }
         return intentMessage.queryResult.fulfillmentText
-        // return "I understood '${intentMessage.queryResult.queryText}'. Unfortunately I don't know what to do. :("
     }
 
     /**
