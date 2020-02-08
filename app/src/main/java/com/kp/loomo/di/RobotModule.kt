@@ -32,7 +32,7 @@ class RobotModule {
 
     @Provides
     @Singleton
-    fun provideTimerManager(): TimerManager {
-        return TimerManager()
+    fun provideTimerManager(context: Context): TimerManager {
+        return TimerManager(context)
     }
 }
