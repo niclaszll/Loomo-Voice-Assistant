@@ -19,13 +19,19 @@ class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
     override fun handle(intentMessage: DetectIntentResponse): String {
 
         val cmd = intentMessage.queryResult.parameters.fieldsMap["Command"]!!.stringValue
+        val direction = intentMessage.queryResult.parameters.fieldsMap["Direction"]!!.stringValue
 
         if (cmd == "Reset head") {
             robotManager.resetHead()
             return "Resetting head"
+        } else if (cmd == "Look") {
+            if (direction == "left") {
+                //TODO implement look left
+            } else if (direction == "right") {
+                //TODO implement look right
+            }
+            return "Looking $direction"
         }
-
-        //TODO implement look left/right
 
         return "I didn't understand what to do"
     }
