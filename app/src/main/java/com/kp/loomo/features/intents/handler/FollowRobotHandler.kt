@@ -7,7 +7,8 @@ import javax.inject.Inject
 
 private val TAG = "FollowRobotHandler"
 
-class FollowRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
+class FollowRobotHandler constructor(private var robotManager: RobotManager) :
+    IntentMessageHandler {
 
     // possible keywords, extend here and in intent grammar
     private val keywords = arrayOf("follow", "following")
@@ -23,7 +24,7 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
         if (cmd == "Start") {
             robotManager.actionInitiateTrack()
             return "Following"
-        } else if (cmd == "Stop"){
+        } else if (cmd == "Stop") {
             robotManager.actionTerminateTrack()
             return "I'm no longer following"
         }
@@ -34,7 +35,7 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
     override fun canHandleOffline(intentMessage: String): Boolean {
 
         for (keyword in keywords) {
-            if (intentMessage.contains(keyword,  true)) {
+            if (intentMessage.contains(keyword, true)) {
                 return true
             }
         }
@@ -45,14 +46,15 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
         var follow = false
 
         when (intentMessage) {
-            "start following me", "start following", "follow", "follow me", "start follow" -> follow = true
+            "start following me", "start following", "follow", "follow me", "start follow" -> follow =
+                true
         }
 
         return if (follow) {
-            //robotManager.actionInitiateTrack()
+            robotManager.actionInitiateTrack()
             "Following"
         } else {
-            //robotManager.actionTerminateTrack()
+            robotManager.actionTerminateTrack()
             "I'm no longer following"
         }
     }

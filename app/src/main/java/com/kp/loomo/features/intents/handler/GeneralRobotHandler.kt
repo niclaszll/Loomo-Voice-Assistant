@@ -7,7 +7,10 @@ import javax.inject.Inject
 
 private val TAG = "GeneralRobotHandler"
 
-class GeneralRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
+class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
+    IntentMessageHandler {
+
+    private val keywords = arrayOf("reset", "look")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "GeneralRobot"
@@ -22,14 +25,37 @@ class GeneralRobotHandler constructor(private var robotManager: RobotManager) : 
             return "Resetting head"
         }
 
+        //TODO implement look left/right
+
         return "I didn't understand what to do"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
+        for (keyword in keywords) {
+            if (intentMessage.contains(keyword, true)) {
+                return true
+            }
+        }
         return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        for (keyword in keywords) {
+            if (keyword == "reset" && intentMessage.contains(keyword, true)) {
+                robotManager.resetHead()
+                return "Resetting head"
+            } else if (keyword == "look" && intentMessage.contains(keyword, true)) {
+                var direction = "left"
+                if (intentMessage.contains("right", true)) {
+                    direction = "right"
+                    //TODO implement look right
+                } else if (intentMessage.contains("left", true)) {
+                    direction = "left"
+                    //TODO implement look left
+                }
+                return "Looking $direction."
+            }
+        }
+        return "Sorry, I can't do that."
     }
 }
