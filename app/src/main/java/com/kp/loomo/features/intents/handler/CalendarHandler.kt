@@ -3,9 +3,9 @@ package com.kp.loomo.features.intents.handler
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 
-class CalendarHandler : IntentMessageHandler {
+private val TAG = "CalendarHandler"
 
-    private val tag = "CalendarHandler"
+class CalendarHandler : IntentMessageHandler {
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         // return intentMessage.queryResult.intent.displayName == "Calendar"

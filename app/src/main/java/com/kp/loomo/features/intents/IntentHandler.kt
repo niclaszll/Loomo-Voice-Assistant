@@ -6,6 +6,7 @@ import com.kp.loomo.features.intents.handler.*
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
 import com.kp.loomo.features.robot.TimerManager
+import com.kp.loomo.features.startpage.StartpagePresenter
 import javax.inject.Inject
 
 /**

@@ -19,6 +19,7 @@ import com.kp.loomo.R
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
+import com.kp.loomo.features.robot.TimerManager
 import com.kp.loomo.features.speech.AudioEmitter
 import com.kp.loomo.features.speech.DialogFlowManager
 import com.kp.loomo.features.speech.PocketSphinxManager
@@ -40,9 +41,10 @@ class StartpagePresenter @Inject constructor(
     private var connectivityManager: ConnectivityManager,
     private var dialogFlowManager: DialogFlowManager,
     private var robotManager: RobotManager,
-    private var intentHandler: IntentHandler
+    private var intentHandler: IntentHandler,
+    private var timerManager: TimerManager
 ) :
-    StartpageContract.Presenter, SpeechResponseHandler {
+    StartpageContract.Presenter, SpeechResponseHandler, TimerViewCallback {
 
     @Nullable
     private var startpageFragment: StartpageContract.View? = null
@@ -71,6 +73,7 @@ class StartpagePresenter @Inject constructor(
         Log.d(TAG, "initializing speech...")
 
         robotManager.initRobotConnection(this)
+        timerManager.init(this)
 
         // init TSS
         mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
@@ -82,6 +85,7 @@ class StartpagePresenter @Inject constructor(
                         if (currentResponse!!.queryResult.allRequiredParamsPresent) {
                             Log.d(TAG, "All params ready.")
                             robotManager.startWakeUpListener()
+                            showText("Say something.")
                             //TODO: Needed?
                             currentResponse = null
                         } else {
@@ -189,7 +193,7 @@ class StartpagePresenter @Inject constructor(
                             startpageFragment!!.showText(
                                 response.getResults(0).getAlternatives(
                                     0
-                                ).transcript
+                                ).transcript, OutputView.RSP
                             )
                             //send to Dialogflow
                             dialogFlowManager.sendToDialogflow(
@@ -242,7 +246,7 @@ class StartpagePresenter @Inject constructor(
         currentResponse = response
         val botReply = intentHandler.handleIntent(response)
 
-        startpageFragment?.showText(botReply)
+        startpageFragment?.showText(botReply, OutputView.RSP)
 
         mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
     }
@@ -262,8 +266,19 @@ class StartpagePresenter @Inject constructor(
      * Show text on screen
      */
     override fun showText(text: String) {
-        // TODO: handler necessary?
-        handler.post { startpageFragment?.showText(text) }
+        // handler.post { startpageFragment?.showText(text) }
+        startpageFragment?.showText(text, OutputView.RSP)
+    }
+
+    /**
+     * Display timer
+     */
+    override fun displayTimer(remainingSeconds: Int) {
+        if (remainingSeconds == 0) {
+            startpageFragment?.showText("", OutputView.ADD)
+        } else {
+            startpageFragment?.showText(remainingSeconds.toString(), OutputView.ADD)
+        }
     }
 
     /**

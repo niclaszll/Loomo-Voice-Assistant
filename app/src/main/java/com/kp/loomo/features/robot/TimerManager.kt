@@ -4,6 +4,8 @@ import android.content.Context
 import android.media.RingtoneManager
 import android.os.CountDownTimer
 import android.util.Log
+import com.kp.loomo.features.startpage.StartpagePresenter
+import com.kp.loomo.features.startpage.TimerViewCallback
 import java.util.*
 
 private const val TAG = "TimerManager"
@@ -13,6 +15,11 @@ class TimerManager(private var applicationContext: Context) {
     var activeTimer: CountDownTimer? = null
     var remainingTime = 0
     var paused = false
+    var viewCallback: TimerViewCallback? = null
+
+    fun init(timerViewCallback: TimerViewCallback) {
+        viewCallback = timerViewCallback
+    }
 
     fun setTimer(seconds: Int, minutes: Int) {
 
@@ -28,11 +35,13 @@ class TimerManager(private var applicationContext: Context) {
             override fun onTick(millisUntilFinished: Long) {
                 Log.d(TAG,"seconds remaining: " + millisUntilFinished / 1000)
                 remainingTime -= 1000
+                viewCallback?.displayTimer(remainingTime/1000)
             }
 
             override fun onFinish() {
                 Log.d(TAG,"Timer finished")
                 remainingTime = 0
+                viewCallback?.displayTimer(remainingTime)
                 playRing()
             }
         }.start()
