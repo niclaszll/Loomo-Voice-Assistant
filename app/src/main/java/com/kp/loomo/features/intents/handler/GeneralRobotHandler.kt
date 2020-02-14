@@ -26,9 +26,9 @@ class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
             return "Resetting head"
         } else if (cmd == "Look") {
             if (direction == "left") {
-                //TODO implement look left
+                robotManager.lookDirection("left")
             } else if (direction == "right") {
-                //TODO implement look right
+                robotManager.lookDirection("right")
             }
             return "Looking $direction"
         }
@@ -54,10 +54,10 @@ class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
                 var direction = "left"
                 if (intentMessage.contains("right", true)) {
                     direction = "right"
-                    //TODO implement look right
+                    robotManager.lookDirection("right")
                 } else if (intentMessage.contains("left", true)) {
                     direction = "left"
-                    //TODO implement look left
+                    robotManager.lookDirection("left")
                 }
                 return "Looking $direction."
             }
