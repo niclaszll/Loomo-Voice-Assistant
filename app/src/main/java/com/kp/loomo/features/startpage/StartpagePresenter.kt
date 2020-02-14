@@ -266,8 +266,8 @@ class StartpagePresenter @Inject constructor(
      * Show text on screen
      */
     override fun showText(text: String) {
-        // handler.post { startpageFragment?.showText(text) }
-        startpageFragment?.showText(text, OutputView.RSP)
+        handler.post { startpageFragment?.showText(text, OutputView.RSP) }
+        //startpageFragment?.showText(text, OutputView.RSP)
     }
 
     /**
