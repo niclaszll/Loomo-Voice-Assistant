@@ -20,10 +20,8 @@ import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.TimerManager
+import com.kp.loomo.features.speech.*
 import com.kp.loomo.features.speech.AudioEmitter
-import com.kp.loomo.features.speech.DialogFlowManager
-import com.kp.loomo.features.speech.PocketSphinxManager
-import com.kp.loomo.features.speech.SpeechResponseHandler
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -71,6 +69,8 @@ class StartpagePresenter @Inject constructor(
      */
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
+
+        GoogleCloudTTSManager().start("Hello, how are you?")
 
         if (hasInternetConnection()) {
             robotManager.initRobotConnection(this, true)
@@ -147,14 +147,6 @@ class StartpagePresenter @Inject constructor(
      */
     override fun initManualSpeech() {
         isManual = true
-
-        // init TSS
-        mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
-            if (status != TextToSpeech.ERROR) {
-                //if there is no error then set language
-                mTTS?.language = Locale.US
-            }
-        })
 
         if (hasInternetConnection()) {
             // online
