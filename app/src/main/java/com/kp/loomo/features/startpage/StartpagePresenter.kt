@@ -70,7 +70,7 @@ class StartpagePresenter @Inject constructor(
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        GoogleCloudTTSManager().start("Hello, how are you?")
+        //GoogleCloudTTSManager().start("Hello, how are you?")
 
         if (hasInternetConnection()) {
             robotManager.initRobotConnection(this, true)
