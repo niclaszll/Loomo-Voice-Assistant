@@ -15,7 +15,7 @@ class GoogleCloudTTSManager {
     private val url = "https://texttospeech.googleapis.com/v1beta1/text:synthesize"
     private val client = OkHttpClient()
 
-    fun start(text: String) = runBlocking {
+    fun textToSpeech(text: String, callbackOnSpeechFinished: (online: Boolean) -> Unit) = runBlocking {
 
         client.newCall(createRequest(text)).enqueue(object : Callback {
             override fun onFailure(call: Call?, e: IOException) {
@@ -32,7 +32,7 @@ class GoogleCloudTTSManager {
                             body,
                             AudioResponse::class.java
                         )
-                        playAudio(audioResponse)
+                        playAudio(audioResponse, callbackOnSpeechFinished)
                     }
                 }
             }
@@ -59,7 +59,7 @@ class GoogleCloudTTSManager {
         )
     }
 
-    private fun playAudio(audioResponse: AudioResponse) {
+    private fun playAudio(audioResponse: AudioResponse, callback: (online: Boolean) -> Unit) {
         try {
             val dataSource = "data:audio/mp3;base64,${audioResponse.audioContent}"
             mediaPlayer = MediaPlayer().apply {
@@ -68,7 +68,7 @@ class GoogleCloudTTSManager {
                 start()
             }
             mediaPlayer!!.setOnCompletionListener {
-                // do something on completion
+                callback(true)
             }
         } catch (IoEx: IOException) {
             throw IoEx

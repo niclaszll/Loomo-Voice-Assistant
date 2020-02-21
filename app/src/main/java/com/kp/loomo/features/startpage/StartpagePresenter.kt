@@ -70,28 +70,16 @@ class StartpagePresenter @Inject constructor(
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        //GoogleCloudTTSManager().start("Hello, how are you?")
-
         if (hasInternetConnection()) {
             robotManager.initRobotConnection(this, true)
             // online
             mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
 
                 if (status == TextToSpeech.SUCCESS) {
-                    Log.d(TAG, "TTS initialized!")
                     mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                         override fun onDone(utteranceId: String) {
-                            if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
-                                Log.d(TAG, "All params ready.")
-                                robotManager.startWakeUpListener()
-                                //TODO: Needed?
-                                currentResponse = null
-                            } else {
-                                Log.e(TAG, "Not enough params")
-                                startAudioRecording(true)
-                            }
+                            onSpeechFinished(true)
                         }
-
                         override fun onError(utteranceId: String) {}
                         override fun onStart(utteranceId: String) {}
                     })
@@ -114,10 +102,9 @@ class StartpagePresenter @Inject constructor(
             mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
 
                 if (status == TextToSpeech.SUCCESS) {
-                    Log.d(TAG, "TTS initialized!")
                     mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                         override fun onDone(utteranceId: String) {
-                            robotManager.startWakeUpListener()
+                            onSpeechFinished(false)
                         }
                         override fun onError(utteranceId: String) {}
                         override fun onStart(utteranceId: String) {}
@@ -139,6 +126,21 @@ class StartpagePresenter @Inject constructor(
             })
 
 
+        }
+    }
+
+    fun onSpeechFinished (online: Boolean) {
+        if(online) {
+            if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
+                Log.d(TAG, "All params ready.")
+                robotManager.startWakeUpListener()
+                currentResponse = null
+            } else {
+                Log.e(TAG, "Not enough params")
+                startAudioRecording(true)
+            }
+        } else {
+            robotManager.startWakeUpListener()
         }
     }
 
@@ -268,7 +270,9 @@ class StartpagePresenter @Inject constructor(
 
         startpageFragment?.showText(botReply, OutputView.RSP)
 
-        mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        //mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+
+        GoogleCloudTTSManager().textToSpeech(botReply, ::onSpeechFinished)
     }
 
     /**
