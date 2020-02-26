@@ -49,7 +49,7 @@ class GoogleCloudTTSManager {
     private fun createRequestBody(text: String): RequestBody {
         val requestParams = RequestParams(
             input = SynthesisInput(text = text),
-            voice = VoiceSelectionParams(languageCode = "en-US"),
+            voice = VoiceSelectionParams(languageCode = "en-US", ssmlGender = "FEMALE"),
             audioConfig = AudioConfig(audioEncoding = "LINEAR16")
         )
         val json = Gson().toJson(requestParams)
@@ -90,7 +90,8 @@ class GoogleCloudTTSManager {
     )
 
     data class VoiceSelectionParams(
-        val languageCode: String
+        val languageCode: String,
+        val ssmlGender: String
     )
 
     data class AudioConfig(

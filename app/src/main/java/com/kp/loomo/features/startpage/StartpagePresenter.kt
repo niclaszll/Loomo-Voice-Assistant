@@ -1,6 +1,7 @@
 package com.kp.loomo.features.startpage
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Handler
@@ -40,7 +41,8 @@ class StartpagePresenter @Inject constructor(
     private var dialogFlowManager: DialogFlowManager,
     private var robotManager: RobotManager,
     private var intentHandler: IntentHandler,
-    private var timerManager: TimerManager
+    private var timerManager: TimerManager,
+    private var sharedPrefs: SharedPreferences
 ) :
     StartpageContract.Presenter, SpeechResponseHandler, TimerViewCallback {
 
@@ -270,9 +272,14 @@ class StartpagePresenter @Inject constructor(
 
         startpageFragment?.showText(botReply, OutputView.RSP)
 
-        //mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        val enableGoogleCloudTTS = sharedPrefs.getBoolean("google_tts", false)
 
-        GoogleCloudTTSManager().textToSpeech(botReply, ::onSpeechFinished)
+        if (enableGoogleCloudTTS) {
+            GoogleCloudTTSManager().textToSpeech(botReply, ::onSpeechFinished)
+        } else {
+            mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        }
+
     }
 
     /**
@@ -291,7 +298,6 @@ class StartpagePresenter @Inject constructor(
      */
     override fun showText(text: String) {
         handler.post { startpageFragment?.showText(text, OutputView.RSP) }
-        //startpageFragment?.showText(text, OutputView.RSP)
     }
 
     /**

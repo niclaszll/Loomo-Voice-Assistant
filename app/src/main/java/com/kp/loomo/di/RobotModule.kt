@@ -1,12 +1,11 @@
 package com.kp.loomo.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
 import com.kp.loomo.features.robot.TimerManager
-import com.kp.loomo.features.startpage.StartpagePresenter
-import com.kp.loomo.features.startpage.TimerViewCallback
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -36,5 +35,12 @@ class RobotModule {
     @Singleton
     fun provideTimerManager(context: Context): TimerManager {
         return TimerManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(context: Context): SharedPreferences {
+        return context.getSharedPreferences(
+            "SHARED_PREFERENCES", Context.MODE_PRIVATE)
     }
 }
