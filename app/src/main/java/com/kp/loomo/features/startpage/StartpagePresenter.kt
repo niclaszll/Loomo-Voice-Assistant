@@ -42,6 +42,7 @@ class StartpagePresenter @Inject constructor(
     private var robotManager: RobotManager,
     private var intentHandler: IntentHandler,
     private var timerManager: TimerManager,
+    private var googleCloudTTSManager: GoogleCloudTTSManager,
     private var sharedPrefs: SharedPreferences
 ) :
     StartpageContract.Presenter, SpeechResponseHandler, TimerViewCallback {
@@ -275,7 +276,7 @@ class StartpagePresenter @Inject constructor(
         val enableGoogleCloudTTS = sharedPrefs.getBoolean("google_tts", false)
 
         if (enableGoogleCloudTTS) {
-            GoogleCloudTTSManager().textToSpeech(botReply, ::onSpeechFinished)
+            googleCloudTTSManager.textToSpeech(botReply, ::onSpeechFinished)
         } else {
             mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
         }

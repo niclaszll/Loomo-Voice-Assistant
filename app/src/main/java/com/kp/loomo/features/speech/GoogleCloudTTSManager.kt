@@ -1,14 +1,16 @@
 package com.kp.loomo.features.speech
 
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import com.google.gson.Gson
 import com.kp.loomo.BuildConfig
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import java.io.IOException
+import javax.inject.Inject
 
 
-class GoogleCloudTTSManager {
+class GoogleCloudTTSManager  @Inject constructor(private var sharedPrefs: SharedPreferences) {
 
     private var mediaPlayer: MediaPlayer? = null
     private val apiKey = BuildConfig.GoogleSecAPIKEY
@@ -47,9 +49,12 @@ class GoogleCloudTTSManager {
         .build()
 
     private fun createRequestBody(text: String): RequestBody {
+
+        val voiceGender = sharedPrefs.getString("voice_gender", "FEMALE")
+
         val requestParams = RequestParams(
             input = SynthesisInput(text = text),
-            voice = VoiceSelectionParams(languageCode = "en-US", ssmlGender = "FEMALE"),
+            voice = VoiceSelectionParams(languageCode = "en-US", ssmlGender = voiceGender!!),
             audioConfig = AudioConfig(audioEncoding = "LINEAR16")
         )
         val json = Gson().toJson(requestParams)

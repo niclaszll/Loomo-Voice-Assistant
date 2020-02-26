@@ -89,7 +89,7 @@ class MainActivity : DaggerAppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
 
-        R.id.action_settings -> {
+        R.id.action_google_tts -> {
             val editor = sharedPrefs.edit()
             val enableGoogleCloudTTS = sharedPrefs.getBoolean("google_tts", false)
 
@@ -108,6 +108,32 @@ class MainActivity : DaggerAppCompatActivity() {
                 val toast = Toast.makeText(
                     applicationContext,
                     "Google Cloud TTS activated",
+                    Toast.LENGTH_SHORT
+                )
+                toast.show()
+            }
+
+            true
+        }
+        R.id.action_voice_gender -> {
+            val editor = sharedPrefs.edit()
+            val voiceGender = sharedPrefs.getString("voice_gender", "FEMALE")
+
+            if (voiceGender == "FEMALE") {
+                editor.putString("voice_gender", "MALE")
+                editor.apply()
+                val toast = Toast.makeText(
+                    applicationContext,
+                    "Cloud voice gender changed to male.",
+                    Toast.LENGTH_SHORT
+                )
+                toast.show()
+            } else {
+                editor.putString("voice_gender", "FEMALE")
+                editor.apply()
+                val toast = Toast.makeText(
+                    applicationContext,
+                    "Cloud voice gender changed to female.",
                     Toast.LENGTH_SHORT
                 )
                 toast.show()
