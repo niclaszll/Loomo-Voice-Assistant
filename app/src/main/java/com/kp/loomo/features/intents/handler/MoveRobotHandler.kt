@@ -21,7 +21,11 @@ class MoveRobotHandler constructor(private var robotManager: RobotManager) : Int
         val direction = intentMessage.queryResult.parameters.fieldsMap["direction"]!!.stringValue
         robotManager.drive(direction)
 
-        return "Driving $direction"
+        return if (direction == "turn") {
+            "Ok, turning around"
+        } else {
+            "Driving $direction"
+        }
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {

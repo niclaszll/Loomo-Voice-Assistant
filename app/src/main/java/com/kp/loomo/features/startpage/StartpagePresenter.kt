@@ -75,60 +75,17 @@ class StartpagePresenter @Inject constructor(
 
         if (hasInternetConnection()) {
             robotManager.initRobotConnection(this, true)
-            // online
-            mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
-
-                if (status == TextToSpeech.SUCCESS) {
-                    mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                        override fun onDone(utteranceId: String) {
-                            onSpeechFinished(true)
-                        }
-                        override fun onError(utteranceId: String) {}
-                        override fun onStart(utteranceId: String) {}
-                    })
-                } else {
-                    Log.e(TAG, "Initilization Failed!")
-                }
-
-                if (status != TextToSpeech.ERROR) {
-                    //if there is no error then set language
-                    mTTS?.language = Locale.US
-                }
-            })
+            initAndroidTTS(true)
 
             dialogFlowManager.init(this)
             timerManager.init(this)
 
         } else {
             robotManager.initRobotConnection(this, false)
-            // offline
-            mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
-
-                if (status == TextToSpeech.SUCCESS) {
-                    mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                        override fun onDone(utteranceId: String) {
-                            onSpeechFinished(false)
-                        }
-                        override fun onError(utteranceId: String) {}
-                        override fun onStart(utteranceId: String) {}
-                    })
-                } else {
-                    Log.e(TAG, "Initilization Failed!")
-                }
-
-                if (status != TextToSpeech.ERROR) {
-                    // if there is no error then set language
-                    mTTS?.language = Locale.US
-
-                    // inform user, that loomo is offline
-                    val offlineString =
-                        "Unfortunately I can't connect to the internet. My functionality might be limited."
-                    showText(offlineString)
-                    //mTTS?.speak(offlineString, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-                }
-            })
-
-
+            initAndroidTTS(false)
+            val offlineString =
+                "Unfortunately I can't connect to the internet. My functionality might be limited."
+            showText(offlineString)
         }
     }
 
@@ -145,6 +102,29 @@ class StartpagePresenter @Inject constructor(
         } else {
             robotManager.startWakeUpListener()
         }
+    }
+
+    private fun initAndroidTTS(online: Boolean) {
+
+        mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
+
+            if (status == TextToSpeech.SUCCESS) {
+                mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onDone(utteranceId: String) {
+                        onSpeechFinished(online)
+                    }
+                    override fun onError(utteranceId: String) {}
+                    override fun onStart(utteranceId: String) {}
+                })
+            } else {
+                Log.e(TAG, "Initilization Failed!")
+            }
+
+            if (status != TextToSpeech.ERROR) {
+                // if there is no error then set language
+                mTTS?.language = Locale.US
+            }
+        })
     }
 
     /**

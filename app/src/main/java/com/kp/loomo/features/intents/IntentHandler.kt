@@ -25,6 +25,7 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(SystemHandler(systemSettingsManager))
         listOfHandler.add(TimerHandler(timeManager))
         listOfHandler.add(DateTimeHandler())
+        //listOfHandler.add(QuizHandler())
     }
 
     /**
