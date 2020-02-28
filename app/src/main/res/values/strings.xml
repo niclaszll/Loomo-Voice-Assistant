@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">Loomo</string>
-    <string name="getting_ready">Getting ready…</string>
+    <string name="getting_ready">Getting ready …</string>
     <string name="instruction">Say \'Hey Snips\' followed by your command.</string>
     <string name="listening_text">Listening…</string>
-    <string name="getting_ready_text">Getting ready…</string>
+    <string name="getting_ready_text">Getting ready …</string>
     <string name="error_text">Sorry there was an error.</string>
+    <string name="manual_voice_input">Manual voice input</string>
+    <string name="toggle_google_tts">Toggle Google TTS</string>
+    <string name="toggle_voice_gender">Toggle Voice Gender</string>
 </resources>

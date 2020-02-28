@@ -100,7 +100,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
         Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
-        startNewSearch(intentSearch)
+        //startNewSearch(intentSearch)
     }
 
     /**
@@ -108,7 +108,6 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      */
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
-            Log.d(TAG, "onResult " + hypothesis.hypstr)
             Log.d(TAG, "onResult " + hypothesis.hypstr)
             recognizer?.stop()
             responseHandler?.handlePocketSphinxResponse(hypothesis.hypstr)

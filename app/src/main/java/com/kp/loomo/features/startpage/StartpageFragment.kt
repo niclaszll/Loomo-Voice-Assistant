@@ -61,15 +61,21 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
     /**
      * Render text from resourceIdentifier
      */
-    override fun showText(resourceIdentifier: Int) {
-        textView.text = getString(resourceIdentifier)
+    override fun showText(resourceIdentifier: Int, view: OutputView) {
+        when (view) {
+            OutputView.RSP -> loomoResponse.text = getString(resourceIdentifier)
+            OutputView.ADD -> additionalInfo.text = getString(resourceIdentifier)
+        }
     }
 
     /**
      * Render text from String
      */
-    override fun showText(text: String) {
-        textView.text = text
+    override fun showText(text: String, view: OutputView) {
+        when (view) {
+            OutputView.RSP -> loomoResponse.text = text
+            OutputView.ADD -> additionalInfo.text = text
+        }
     }
 
     /**

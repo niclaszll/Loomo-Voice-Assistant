@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_google_tts"
+        android:title="@string/toggle_google_tts"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_voice_gender"
+        android:title="@string/toggle_voice_gender"
+        app:showAsAction="never" />
+</menu>

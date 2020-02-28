@@ -7,7 +7,11 @@ import javax.inject.Inject
 
 private val TAG = "FollowRobotHandler"
 
-class FollowRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
+class FollowRobotHandler constructor(private var robotManager: RobotManager) :
+    IntentMessageHandler {
+
+    // possible keywords, extend here and in intent grammar
+    private val keywords = arrayOf("follow", "following")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "Follow"
@@ -20,7 +24,7 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
         if (cmd == "Start") {
             robotManager.actionInitiateTrack()
             return "Following"
-        } else if (cmd == "Stop"){
+        } else if (cmd == "Stop") {
             robotManager.actionTerminateTrack()
             return "I'm no longer following"
         }
@@ -29,10 +33,29 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) : I
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
+
+        for (keyword in keywords) {
+            if (intentMessage.contains(keyword, true)) {
+                return true
+            }
+        }
         return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        var follow = false
+
+        when (intentMessage) {
+            "start following me", "start following", "follow", "follow me", "start follow" -> follow =
+                true
+        }
+
+        return if (follow) {
+            robotManager.actionInitiateTrack()
+            "Following"
+        } else {
+            robotManager.actionTerminateTrack()
+            "I'm no longer following"
+        }
     }
 }
