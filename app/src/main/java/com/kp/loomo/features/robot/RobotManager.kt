@@ -26,7 +26,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     // Loomo SDK
     private var mRecognizer: Recognizer? = null
-    private var mSpeaker: Speaker? = null
+    //private var mSpeaker: Speaker? = null
 
     // Listeners
     private var mWakeupListener: WakeupListener? = null
@@ -72,7 +72,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         mBase = Base.getInstance()
         mVision = Vision.getInstance()
         mHead = Head.getInstance()
-        mSpeaker = Speaker.getInstance()
+        //mSpeaker = Speaker.getInstance()
 
         mRecognizer!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
@@ -127,6 +127,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
         })
 
+        /*
         mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 Log.d(TAG, "Speaker service onBind")
@@ -136,7 +137,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             override fun onUnbind(s: String) {
                 Log.d(TAG, "Speaker service onUnbind")
             }
-        })
+        })*/
 
     }
 
@@ -303,7 +304,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      * Make Loomo speak
      */
     fun speak(text: String) {
-        mSpeaker!!.speak(text, mTtsListener!!)
+        //mSpeaker!!.speak(text, mTtsListener!!)
     }
 
     /**
