@@ -26,7 +26,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     // Loomo SDK
     private var mRecognizer: Recognizer? = null
-    private var mSpeaker: Speaker? = null
+    //private var mSpeaker: Speaker? = null
 
     // Listeners
     private var mWakeupListener: WakeupListener? = null
@@ -58,21 +58,21 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     private var startpagePresenter: StartpagePresenter? = null
 
-    fun initRobotConnection(presenter: StartpagePresenter) {
+    fun initRobotConnection(presenter: StartpagePresenter, online: Boolean) {
         startpagePresenter = presenter
-        initComponents()
-        initListeners()
+        initComponents(online)
+        initListeners(online)
     }
 
     /**
      * Init Loomo components
      */
-    private fun initComponents() {
+    private fun initComponents(online: Boolean) {
         mRecognizer = Recognizer.getInstance()
         mBase = Base.getInstance()
         mVision = Vision.getInstance()
         mHead = Head.getInstance()
-        mSpeaker = Speaker.getInstance()
+        //mSpeaker = Speaker.getInstance()
 
         mRecognizer!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
@@ -127,6 +127,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
         })
 
+        /*
         mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
                 Log.d(TAG, "Speaker service onBind")
@@ -136,14 +137,14 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             override fun onUnbind(s: String) {
                 Log.d(TAG, "Speaker service onUnbind")
             }
-        })
+        })*/
 
     }
 
     /**
      * Init listeners
      */
-    private fun initListeners() {
+    private fun initListeners(online: Boolean) {
         mTtsListener = object : TtsListener {
             override fun onSpeechStarted(s: String) {
                 //s is speech content, callback this method when speech is starting.
@@ -176,7 +177,8 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                     "Wakeup result:" + wakeupResult?.result + ", angle " + wakeupResult?.angle
                 )
                 // actionInitiateTrack()
-                startpagePresenter?.startAudioRecording()
+                startpagePresenter?.startAudioRecording(online)
+
             }
 
             override fun onStandby() {
@@ -302,7 +304,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      * Make Loomo speak
      */
     fun speak(text: String) {
-        mSpeaker!!.speak(text, mTtsListener!!)
+        //mSpeaker!!.speak(text, mTtsListener!!)
     }
 
     /**
@@ -372,6 +374,29 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         mHead!!.mode = Head.MODE_SMOOTH_TACKING
         mHead!!.setWorldYaw(0f)
         mHead!!.setWorldPitch(0.7f)
+    }
+
+    fun lookDirection(direction: String) {
+        mHead!!.mode = Head.MODE_SMOOTH_TACKING
+
+        when (direction) {
+            "forward" -> {
+                mHead!!.setWorldYaw(0f)
+                mHead!!.setWorldPitch(0.7f)
+            }
+            "backward" -> {
+                mHead!!.setWorldYaw(3.14f)
+                mHead!!.setWorldPitch(0.7f)
+            }
+            "right" -> {
+                mHead!!.setWorldYaw(-1.57f)
+                mHead!!.setWorldPitch(0.7f)
+            }
+            "left" -> {
+                mHead!!.setWorldYaw(1.57f)
+                mHead!!.setWorldPitch(0.7f)
+            }
+        }
     }
 
     /**

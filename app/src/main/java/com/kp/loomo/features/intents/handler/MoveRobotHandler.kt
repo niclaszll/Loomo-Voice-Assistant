@@ -47,7 +47,7 @@ class MoveRobotHandler constructor(private var robotManager: RobotManager) : Int
                     "forward" -> parsedDirection = "forward"
                 }
 
-                // robotManager.drive(parsedDirection)
+                robotManager.drive(parsedDirection)
 
                 return "Driving $parsedDirection"
             }

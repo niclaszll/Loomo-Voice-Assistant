@@ -6,9 +6,9 @@ import java.util.Date
 import java.util.Locale
 import java.text.SimpleDateFormat
 
-class CalendarHandler : IntentMessageHandler {
+private val TAG = "CalendarHandler"
 
-    private val tag = "CalendarHandler"
+class CalendarHandler : IntentMessageHandler {
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         // return intentMessage.queryResult.intent.displayName == "Calendar"

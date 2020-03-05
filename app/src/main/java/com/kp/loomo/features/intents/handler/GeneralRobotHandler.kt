@@ -7,7 +7,10 @@ import javax.inject.Inject
 
 private val TAG = "GeneralRobotHandler"
 
-class GeneralRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
+class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
+    IntentMessageHandler {
+
+    private val keywords = arrayOf("reset", "look")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "GeneralRobot"
@@ -16,20 +19,49 @@ class GeneralRobotHandler constructor(private var robotManager: RobotManager) : 
     override fun handle(intentMessage: DetectIntentResponse): String {
 
         val cmd = intentMessage.queryResult.parameters.fieldsMap["Command"]!!.stringValue
+        val direction = intentMessage.queryResult.parameters.fieldsMap["Direction"]!!.stringValue
 
         if (cmd == "Reset head") {
             robotManager.resetHead()
             return "Resetting head"
+        } else if (cmd == "Look") {
+            if (direction == "left") {
+                robotManager.lookDirection("left")
+            } else if (direction == "right") {
+                robotManager.lookDirection("right")
+            }
+            return "Looking $direction"
         }
 
         return "I didn't understand what to do"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
+        for (keyword in keywords) {
+            if (intentMessage.contains(keyword, true)) {
+                return true
+            }
+        }
         return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        for (keyword in keywords) {
+            if (keyword == "reset" && intentMessage.contains(keyword, true)) {
+                robotManager.resetHead()
+                return "Resetting head"
+            } else if (keyword == "look" && intentMessage.contains(keyword, true)) {
+                var direction = "left"
+                if (intentMessage.contains("right", true)) {
+                    direction = "right"
+                    robotManager.lookDirection("right")
+                } else if (intentMessage.contains("left", true)) {
+                    direction = "left"
+                    robotManager.lookDirection("left")
+                }
+                return "Looking $direction."
+            }
+        }
+        return "Sorry, I can't do that."
     }
 }
