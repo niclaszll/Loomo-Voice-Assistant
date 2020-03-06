@@ -21,8 +21,8 @@ class RobotModule {
 
     @Provides
     @Singleton
-    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager): IntentHandler {
-        return IntentHandler(robotManager, systemSettingsManager, timeManager)
+    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, sharedPreferences: SharedPreferences): IntentHandler {
+        return IntentHandler(robotManager, systemSettingsManager, timeManager, sharedPreferences)
     }
 
     @Provides

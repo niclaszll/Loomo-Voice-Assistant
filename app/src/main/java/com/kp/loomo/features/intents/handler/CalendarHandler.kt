@@ -2,6 +2,7 @@
 
 package com.kp.loomo.features.intents.handler
 
+import android.content.SharedPreferences
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 import java.util.Date
@@ -10,7 +11,7 @@ import java.text.SimpleDateFormat
 
 private val TAG = "CalendarHandler"
 
-class CalendarHandler : IntentMessageHandler {
+class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): IntentMessageHandler {
 
     private val keywords = arrayOf("make appointment", "make an appointment")
     private val times = arrayOf("at 4pm", "tomorrow at 6pm")
@@ -48,6 +49,22 @@ class CalendarHandler : IntentMessageHandler {
     }
 
     override fun handleOffline(intentMessage: String): String {
+
+        // Editor Instanz initialisieren um, Änderungen vornehmen zu können
+        val editor = sharedPrefs.edit()
+
+        // Irgendwas in den Shared Prefs speichern -> KEY ist Referenz mit der dann später drauf zugegriffen werden kann
+        // du kannst verschiendene Typen speichern (Bool, String, etc.)
+        editor.putBoolean("KEY", true)
+        editor.putString("KEY", "Der zu speichernde String")
+        editor.apply() // Änderungen committen
+
+
+        // Aus Shared Prefs lesen, defValue wird genommen, falls nichts bei dem Key gespeichert ist
+        val myBool = sharedPrefs.getBoolean("KEY", false)
+        val myString = sharedPrefs.getString("KEY", "Default String")
+
+
         for (keyword in keywords) {
             if (keyword == "make" && intentMessage.contains(keyword,  true)) {
                 for (time in times) {
