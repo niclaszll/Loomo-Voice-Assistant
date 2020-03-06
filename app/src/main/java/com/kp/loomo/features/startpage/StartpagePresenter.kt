@@ -150,6 +150,7 @@ class StartpagePresenter @Inject constructor(
 
         Log.d(TAG, "recording ...")
         showText("I'm listening...")
+        val timeoutHandler = Handler()
 
         if (online) {
             val isFirstRequest = AtomicBoolean(true)
@@ -171,6 +172,12 @@ class StartpagePresenter @Inject constructor(
 
                 override fun onStart(controller: StreamController?) {
                     Log.d(TAG, "start stream")
+                    timeoutHandler.postDelayed({
+                        Log.d(TAG, "Timeout")
+                        showText("Sorry, I can't hear you.")
+                        controller?.cancel()
+                        onComplete()
+                    }, 5000)
                 }
 
                 override fun onError(t: Throwable) {
@@ -186,6 +193,7 @@ class StartpagePresenter @Inject constructor(
                 }
 
                 override fun onResponse(response: StreamingRecognizeResponse?) {
+                    timeoutHandler.removeCallbacksAndMessages(null)
                     handler.post {
                         when {
                             // handle recognized text
@@ -237,6 +245,7 @@ class StartpagePresenter @Inject constructor(
                 // send the next request
                 requestStream!!.send(builder.build())
             }
+
         } else {
             pocketSphinxManager.initPocketSphinx(this)
         }
@@ -254,24 +263,22 @@ class StartpagePresenter @Inject constructor(
         startpageFragment?.showText(botReply, OutputView.RSP)
 
         val enableGoogleCloudTTS = sharedPrefs.getBoolean("google_tts", false)
-
-        if (enableGoogleCloudTTS) {
-            googleCloudTTSManager.textToSpeech(botReply, ::onSpeechFinished)
-        } else {
-            mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
-        }
-
+        speak(botReply, enableGoogleCloudTTS)
     }
 
     /**
      * Handle response from PocketSphinx (offline)
      */
     override fun handlePocketSphinxResponse(response: String) {
-        val botReply = intentHandler.handleOfflineIntent(response)
+
+        val botReply: String = if (response == "Timeout") {
+            "Sorry, I can't hear you."
+        } else {
+            intentHandler.handleOfflineIntent(response)
+        }
 
         showText(botReply)
-
-        mTTS?.speak(botReply, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        speak(botReply, false)
     }
 
     /**
@@ -279,6 +286,14 @@ class StartpagePresenter @Inject constructor(
      */
     override fun showText(text: String) {
         handler.post { startpageFragment?.showText(text, OutputView.RSP) }
+    }
+
+    private fun speak(text: String, onlineTTS: Boolean) {
+        if (onlineTTS) {
+            googleCloudTTSManager.textToSpeech(text, ::onSpeechFinished)
+        } else {
+            mTTS?.speak(text, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+        }
     }
 
     /**
