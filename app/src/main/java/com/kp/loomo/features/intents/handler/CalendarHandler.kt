@@ -1,3 +1,5 @@
+@file:Suppress("UNREACHABLE_CODE")
+
 package com.kp.loomo.features.intents.handler
 
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
@@ -10,10 +12,14 @@ private val TAG = "CalendarHandler"
 
 class CalendarHandler : IntentMessageHandler {
 
+    private val keywords = arrayOf("make appointment", "make an appointment")
+    private val times = arrayOf("at 4pm", "tomorrow at 6pm")
+
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
-        // return intentMessage.queryResult.intent.displayName == "Calendar"
-        return false
+         return intentMessage.queryResult.intent.displayName == "Calendar"
+
     }
+
     fun String.getStringDate(initialFormat: String, requiredFormat: String, locale: Locale = Locale.getDefault()): String {
         return this.toDate(initialFormat, locale).toString(requiredFormat, locale)
     }
@@ -25,21 +31,59 @@ class CalendarHandler : IntentMessageHandler {
         return formatter.format(this)
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val date1 = intentMessage.queryResult.parameters.fieldsMap["date"]!!.toString()
+        val dateTime = intentMessage.queryResult.parameters.fieldsMap["date"]!!.stringValue
         val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
-        val message = intentMessage.queryResult.fulfillmentText
-        return "${date1}, ${event},${message}"
+       /* val message = intentMessage.queryResult.fulfillmentText
+        */
+        return "Got it. $event on $dateTime"
     }
 
-
     override fun canHandleOffline(intentMessage: String): Boolean {
+        for (keyword in keywords) {
+            if (intentMessage.contains(keyword, true)) {
+                return true
+            }
+        }
         return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        for (keyword in keywords) {
+            if (keyword == "make" && intentMessage.contains(keyword,  true)) {
+                for (time in times) {
+                    if (intentMessage.contains(time,  true)) {
+                        val value = toTimeNumber(time)
+
+                        return "Got it. Appointment."
+                    }
+                }
+                return "Sorry, couldn't make the appointment"
+            } else if (keyword == "delete" && intentMessage.contains(keyword,  true)) {
+                for (time in times) {
+                    if (intentMessage.contains(time,  true)) {
+                        val value = toTimeNumber(time)
+
+                        return "Got it. Delete."
+                    }
+                }
+                return "Sorry, couldn't find the appointment to delete."
+            } else if (keyword == "tell" && intentMessage.contains(keyword,  true)) {
+                /*
+                need of an constructor, where are they found?
+                 */
+                return "Your appointments:"
+            }
+        }
+        return "Sorry, there has been a mistake."
     }
 }
+    private fun toTimeNumber(stringNumber: String): Int {
+        when (stringNumber) {
+            "four pm" -> return 16
+            "ten am" -> return 10
+        }
+        return 0
+    }
 
     class appointment{
         var eventl: String? = null
@@ -63,21 +107,11 @@ class CalendarHandler : IntentMessageHandler {
 
 /**
  * Idea: Try to find the date, time and appointment in the speech
- * intent detected --> still a problem
- * with fulfillment no intent detected and it does not work with the code
  * make arrays that can be saved
  * save the times and make a window of 1 hour that has an appointment
  * and after that hour make it free again
  * information can be retrieved
  * and you will be informed if the time slot is not available
- * not to make new calendar? does this already have calendar functions I  can use?
- * none found yet
  * cancel should be available too
- *
- * calendarContract.Instances should save start and end time of occurances and be able to generate reoccuring appointments
- * calendarContract.Attendees guest information?
- * calendarContract.Reminders holds notification data
- * oder array liste, die dann aber mit dem Tag abgleicht
- * also event,tag, zeit müssen da sein für einen Eintrag in die arrayliste
 */
 
