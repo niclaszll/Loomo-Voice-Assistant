@@ -21,10 +21,10 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) :
 
         val cmd = intentMessage.queryResult.parameters.fieldsMap["FollowCommand"]!!.stringValue
 
-        if (cmd == "Start") {
+        if (cmd == "Start following") {
             robotManager.actionInitiateTrack()
             return "Following"
-        } else if (cmd == "Stop") {
+        } else if (cmd == "Stop following") {
             robotManager.actionTerminateTrack()
             return "I'm no longer following"
         }

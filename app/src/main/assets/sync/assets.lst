@@ -11,4 +11,13 @@ en-us-ptm/transition_matrices
 en-us-ptm/variances
 intents.gram
 menu.gram
+test_model/COPYING
+test_model/feat.params
+test_model/mdef
+test_model/means
+test_model/mixture_weights
+test_model/noisedict
+test_model/sendump
+test_model/transition_matrices
+test_model/variances
 weather.dmp
