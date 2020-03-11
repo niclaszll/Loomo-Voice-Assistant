@@ -5,17 +5,18 @@ package com.kp.loomo.features.intents.handler
 import android.content.SharedPreferences
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
-import java.util.Date
-import java.util.Locale
 import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 private val TAG = "CalendarHandler"
 
 class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): IntentMessageHandler {
 
-    private val keywords = arrayOf("appointment","meeting","schedule","make appointment", "make an appointment", "delete the meeting", "delete the appointment",
-        "return my appointments", "tell me my schedule", "what is my plan")
-    private val times = arrayOf("at 4pm", "tomorrow at 6pm")
+    private val mustHave = arrayOf("appointment","meeting","schedule", "plan")
+    private val keywords = arrayOf("appointment","meeting","schedule", "plan","make appointment", "make an appointment", "delete the meeting", "delete the appointment",
+        "return my appointments", "tell me my schedule", "what is my plan", "What do I have to do?")
+    private val times = arrayOf("at 4pm", "tomorrow at 6pm", "today")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
          return intentMessage.queryResult.intent.displayName == "Calendar"
@@ -33,7 +34,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         return formatter.format(this)
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val dateTime = intentMessage.queryResult.parameters.fieldsMap["date"]!!.stringValue
+        val dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTime"]!!.stringValue
         val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
        /* val message = intentMessage.queryResult.fulfillmentText
         */
@@ -67,43 +68,81 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         val myBool = sharedPrefs.getBoolean("KEY", false)
         val myString = sharedPrefs.getString("KEY", "Default String")
 
-
+        //sortedMapOf()
         for (keyword in keywords) {
             if (keyword == "make" && intentMessage.contains(keyword,  true)) {
                 for (time in times) {
                     if (intentMessage.contains(time,  true)) {
-                        val value = toTimeNumber(time)
-                        val value2 = value + 1
-                        val termin = arrayOf("appointment",value, value2 )//later how to change the name
-
-                        return "What should I call it? Got it. Appointment."
+                        val startTime = toTimeNumber(time)
+                        val endTime = startTime + 1 //ends + 1h later
+                        //how to get name
+                        val x = mustHave
+                        val appMap = mapOf(startTime to x, endTime to "y")
+                        //what if the key is time?
+                        editor.putBoolean(time, true)
+                        editor.putString(time, mustHave.toString()+appMap)
+                        editor.apply()
+                        return "Got it. $x at $startTime"
 
                     }
                 }
                 return "Sorry, couldn't make the appointment"
-            } else if (keyword == "delete" && intentMessage.contains(keyword,  true)) {
+            } else if (keyword == "delete" || keyword=="cancel"&& intentMessage.contains(keyword,  true)) {
                 for (time in times) {
                     if (intentMessage.contains(time,  true)) {
-                        val value = toTimeNumber(time)
+                        val finding = sharedPrefs.getBoolean(time, true)
+                        if (finding.equals(true)){
+                        editor.putString(time, "delete")
+                        editor.apply()
+                        }
+                        //delete --> false?
 
-                        return "Got it. Delete."
+                        return "Got it. Delete appointment on $time."
                     }
                 }
                 return "Sorry, couldn't find the appointment to delete."
-            } else if (keyword == "tell" && intentMessage.contains(keyword,  true)) {
-                /*
-                need of an constructor, where are they found?
-                 */
-                return "Your appointments:"
+            } else if (keyword == "tell"||keyword=="what do I have to do"&& intentMessage.contains(keyword,  true)) {
+                for (time in times) {
+                    val findings = sharedPrefs.getBoolean(time, true)
+                        return "Your appointments: $findings"
+                }
             }
+            return "No appointments found."
         }
         return "Sorry, there has been a mistake."
     }
 }
     private fun toTimeNumber(stringNumber: String): Int {
         when (stringNumber) {
-            "four pm" -> return 16
-            "ten am" -> return 10
+            "1am"-> return 1
+            "2am"-> return 2
+            "3am"-> return 3
+            "4am"-> return 4
+            "5am"-> return 5
+            "6am"-> return 6
+            "7am"-> return 7
+            "8am"-> return 8
+            "9am"-> return 9
+            "10am"-> return 10
+            "11am"-> return 11
+            "12pm"-> return 12 //noon
+            "1pm"-> return 13
+            "2pm"-> return 14
+            "3pm"-> return 15
+            "4pm"-> return 16
+            "5pm"-> return 17
+            "6pm"-> return 18
+            "7pm"-> return 19
+            "8pm"-> return 20
+            "9pm"-> return 21
+            "10pm"-> return 22
+            "11pm"-> return 23
+            "12am"-> return 0 //midnight
+
+
+            //more of 4:00 to 0400 and back
+            //get the said time
+
         }
         return 0
     }
