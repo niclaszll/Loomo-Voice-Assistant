@@ -64,13 +64,14 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     @Throws(IOException::class)
     private fun setupRecognizer(assetsDir: File) {
         recognizer = SpeechRecognizerSetup.defaultSetup()
-            .setAcousticModel(File(assetsDir, "en-us-ptm"))
+            .setAcousticModel(File(assetsDir, "test_model"))
             .setDictionary(
                 File(
                     assetsDir,
                     "cmudict-en-us.dict"
                 )
             )
+            .setSampleRate(16000)
             .recognizer
 
         recognizer?.addListener(this)
@@ -89,7 +90,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      */
     private fun startNewSearch(searchName: String) {
         recognizer?.stop()
-        recognizer?.startListening(searchName, 10000)
+        recognizer?.startListening(searchName, 5000)
     }
 
     /**
@@ -100,7 +101,6 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
         Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
-        //startNewSearch(intentSearch)
     }
 
     /**
@@ -118,7 +118,10 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      * Start listening again if timeout
      */
     override fun onTimeout() {
-        startNewSearch(intentSearch)
+        Log.d(TAG, "Speech timeout")
+        recognizer?.stop()
+        responseHandler?.handlePocketSphinxResponse("Timeout")
+        //startNewSearch(intentSearch)
     }
 
     override fun onBeginningOfSpeech() {}

@@ -2,6 +2,7 @@ package com.kp.loomo.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
@@ -21,8 +22,8 @@ class RobotModule {
 
     @Provides
     @Singleton
-    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, sharedPreferences: SharedPreferences): IntentHandler {
-        return IntentHandler(robotManager, systemSettingsManager, timeManager, sharedPreferences)
+    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, connectivityManager: ConnectivityManager, sharedPreferences: SharedPreferences): IntentHandler {
+        return IntentHandler(robotManager, systemSettingsManager, timeManager, connectivityManager, sharedPreferences)
     }
 
     @Provides

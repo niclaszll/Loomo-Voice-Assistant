@@ -2,12 +2,14 @@
 
 grammar intents;
 
-private <move_robot> = (drive | go ) (forward | backward | backwards | back | left | right);
+private <move_robot> = (turn [around]) | ((drive | go ) (forward | backward | backwards | back | left | right));
 private <follow> = [start | stop] (following | follow) [me];
 private <general_robot> = reset [your] head | look [to your] (left | right );
 private <time> = [what] time [is it] [now] | how late is it [now];
-private <system_settings> = [set] (brightness | volume | mute | mute yourself) [to] [<numbers>] [percent];
+private <system_settings> = ([set] (brightness | volume ) [to] [<numbers>] [percent]);
 private <numbers> = (zero | ten | twenty | thirty | forty | fifty | sixty | seventy | eighty | ninety | one hundred);
+private <online> = ([are you | am i ] (online | offline) ) | ([do i have] internet [connection]);
+public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time> | <online>;
 private <calendar> = (make | delete | cancel | tell) (appointment | meeting | plan | schedule) [to] [<hours>];
 private <hours> = (one | two | three | four | five | six | seven | eight | nine | ten | eleven | twelve) (am | pm);
 public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time>;

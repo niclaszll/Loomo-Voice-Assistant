@@ -1,5 +1,6 @@
 package com.kp.loomo.features.intents
 
+import android.net.ConnectivityManager
 import android.content.SharedPreferences
 import android.util.Log
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
@@ -13,7 +14,7 @@ import javax.inject.Inject
 /**
  * Intent handler that decides which specific handler should continue
  */
-class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, sharedPreferences: SharedPreferences) {
+class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, connectivityManager: ConnectivityManager, sharedPreferences: SharedPreferences) {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
     // add all handlers here
@@ -26,6 +27,8 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(SystemHandler(systemSettingsManager))
         listOfHandler.add(TimerHandler(timeManager))
         listOfHandler.add(DateTimeHandler())
+        listOfHandler.add(OnlineTestHandler(connectivityManager))
+        //listOfHandler.add(QuizHandler())
     }
 
     /**
