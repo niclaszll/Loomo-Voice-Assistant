@@ -13,7 +13,8 @@ private val TAG = "CalendarHandler"
 
 class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): IntentMessageHandler {
 
-    private val keywords = arrayOf("make appointment", "make an appointment")
+    private val keywords = arrayOf("appointment","meeting","schedule","make appointment", "make an appointment", "delete the meeting", "delete the appointment",
+        "return my appointments", "tell me my schedule", "what is my plan")
     private val times = arrayOf("at 4pm", "tomorrow at 6pm")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
@@ -50,17 +51,19 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
 
     override fun handleOffline(intentMessage: String): String {
 
-        // Editor Instanz initialisieren um, Änderungen vornehmen zu können
+        // Initiate Editor Instance to be able to make changes, Änderungen vornehmen zu können
         val editor = sharedPrefs.edit()
 
         // Irgendwas in den Shared Prefs speichern -> KEY ist Referenz mit der dann später drauf zugegriffen werden kann
+        // Save something in Shared Prefs --> KEY being the reference which will grant access later
         // du kannst verschiendene Typen speichern (Bool, String, etc.)
         editor.putBoolean("KEY", true)
         editor.putString("KEY", "Der zu speichernde String")
-        editor.apply() // Änderungen committen
+        editor.apply() // Änderungen committen, commit changes
 
 
         // Aus Shared Prefs lesen, defValue wird genommen, falls nichts bei dem Key gespeichert ist
+        // Take from Shared Prefs (list from online)
         val myBool = sharedPrefs.getBoolean("KEY", false)
         val myString = sharedPrefs.getString("KEY", "Default String")
 
@@ -70,8 +73,11 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                 for (time in times) {
                     if (intentMessage.contains(time,  true)) {
                         val value = toTimeNumber(time)
+                        val value2 = value + 1
+                        val termin = arrayOf("appointment",value, value2 )//later how to change the name
 
-                        return "Got it. Appointment."
+                        return "What should I call it? Got it. Appointment."
+
                     }
                 }
                 return "Sorry, couldn't make the appointment"
@@ -103,17 +109,18 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
     }
 
     class appointment{
-        var eventl: String? = null
-        var date: String? = null
+        var event: String? = null
+        var dateTime: String? = null
 
     }
     fun saveAppointment(intentMessage: DetectIntentResponse) : appointment{
         val e = appointment()
-        e.eventl = intentMessage.queryResult.parameters.fieldsMap["eventName"]!!.stringValue
-        e.date = intentMessage.queryResult.parameters.fieldsMap["dateTime"]!!.stringValue
+        e.event = intentMessage.queryResult.parameters.fieldsMap["eventName"]!!.stringValue
+        e.dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTime"]!!.stringValue
         println("0")
         val arrayList = ArrayList<String>()
-
+        val arrayname = Array(3, { i -> i * 1 }) //0 1 2 3 4
+        arrayname.set(0, 3)
         arrayList.add("00")
         for (i in arrayList) {
             println(i)
