@@ -10,7 +10,7 @@ private val TAG = "MoveRobotHandler"
 class MoveRobotHandler constructor(private var robotManager: RobotManager) : IntentMessageHandler {
 
     // possible commands, extend here and in intent grammar
-    private val commands = arrayOf("drive", "go", "move")
+    private val commands = arrayOf("drive", "go", "move", "turn")
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "moveRobot"
@@ -40,6 +40,11 @@ class MoveRobotHandler constructor(private var robotManager: RobotManager) : Int
 
         for (cmd in commands) {
             if (intentMessage.startsWith(cmd)) {
+
+                if (cmd == "turn") {
+                    robotManager.drive("turn")
+                    return "Ok, turning around"
+                }
                 val direction = intentMessage.substringAfter(cmd).trim()
                 var parsedDirection = ""
 

@@ -64,13 +64,14 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     @Throws(IOException::class)
     private fun setupRecognizer(assetsDir: File) {
         recognizer = SpeechRecognizerSetup.defaultSetup()
-            .setAcousticModel(File(assetsDir, "en-us-ptm"))
+            .setAcousticModel(File(assetsDir, "test_model"))
             .setDictionary(
                 File(
                     assetsDir,
                     "cmudict-en-us.dict"
                 )
             )
+            .setSampleRate(16000)
             .recognizer
 
         recognizer?.addListener(this)
@@ -126,7 +127,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     override fun onBeginningOfSpeech() {}
 
     override fun onEndOfSpeech() {
-        //if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
+        if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
     }
 
     override fun onError(error: Exception) {

@@ -5,7 +5,7 @@ import com.kp.loomo.features.intents.IntentMessageHandler
 import java.text.DateFormat
 import java.util.*
 
-private val TAG = "DateTimeHandler"
+private const val TAG = "DateTimeHandler"
 
 class DateTimeHandler : IntentMessageHandler {
 

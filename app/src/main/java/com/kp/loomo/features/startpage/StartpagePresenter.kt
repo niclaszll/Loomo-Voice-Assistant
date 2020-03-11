@@ -150,7 +150,7 @@ class StartpagePresenter @Inject constructor(
 
         Log.d(TAG, "recording ...")
         showText("I'm listening...")
-        val timeoutHandler = Handler()
+        val timeoutHandler = Handler(Looper.getMainLooper())
 
         if (online) {
             val isFirstRequest = AtomicBoolean(true)
@@ -175,6 +175,7 @@ class StartpagePresenter @Inject constructor(
                     timeoutHandler.postDelayed({
                         Log.d(TAG, "Timeout")
                         showText("Sorry, I can't hear you.")
+                        robotManager.startWakeUpListener()
                         controller?.cancel()
                         onComplete()
                     }, 5000)
