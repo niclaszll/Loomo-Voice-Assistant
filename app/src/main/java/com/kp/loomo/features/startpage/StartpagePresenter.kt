@@ -63,7 +63,6 @@ class StartpagePresenter @Inject constructor(
     private var requestStream: ClientStream<StreamingRecognizeRequest>? = null
 
     private var mTTS: TextToSpeech? = null
-    private var isManual = false
 
     private var currentResponse: DetectIntentResponse? = null
 
@@ -131,7 +130,6 @@ class StartpagePresenter @Inject constructor(
      * Initialize Manual speech after button click
      */
     override fun initManualSpeech() {
-        isManual = true
 
         if (hasInternetConnection()) {
             // online
@@ -190,7 +188,6 @@ class StartpagePresenter @Inject constructor(
                     mAudioEmitter?.stop()
                     mSpeechClient!!.close()
                     mSpeechClient = null
-
                 }
 
                 override fun onResponse(response: StreamingRecognizeResponse?) {
@@ -324,7 +321,9 @@ class StartpagePresenter @Inject constructor(
         // cleanup
         mAudioEmitter?.stop()
         mAudioEmitter = null
-        mSpeechClient!!.shutdown()
+        if (mSpeechClient != null) {
+            mSpeechClient!!.shutdown()
+        }
         startpageFragment = null
         pocketSphinxManager.shutdown()
         releaseTts()

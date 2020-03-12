@@ -17,18 +17,22 @@ class SystemSettingsManager @Inject constructor(applicationContext: Context) {
             Context.AUDIO_SERVICE
         ) as AudioManager
 
-    fun setupSystemManager(w: Window) {
+    fun setupSystemManager(w: Window?) {
         //setup brightness control
         this.window = w
-        setBrightness(100)
-        setAudioVolume(20)
+        if (window != null) {
+            setBrightness(100)
+            setAudioVolume(20)
+        }
     }
 
     fun setBrightness(value: Int) {
         val brightness = value / 255.toFloat()
-        val lp: WindowManager.LayoutParams = window!!.attributes
-        lp.screenBrightness = brightness
-        window!!.attributes = lp
+        if (window != null) {
+            val lp: WindowManager.LayoutParams = window!!.attributes
+            lp.screenBrightness = brightness
+            window!!.attributes = lp
+        }
     }
 
     fun setAudioVolume(volume: Int) {

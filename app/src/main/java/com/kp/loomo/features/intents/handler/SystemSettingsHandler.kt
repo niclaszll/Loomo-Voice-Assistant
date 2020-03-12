@@ -6,7 +6,7 @@ import com.kp.loomo.features.robot.SystemSettingsManager
 
 private val TAG = "FollowRobotHandler"
 
-class SystemHandler constructor(private var systemSettingsManager: SystemSettingsManager) : IntentMessageHandler {
+class SystemSettingsHandler constructor(private var systemSettingsManager: SystemSettingsManager) : IntentMessageHandler {
 
     // possible keywords, extend here and in intent grammar
     private val keywords = arrayOf("brightness", "volume", "mute")
