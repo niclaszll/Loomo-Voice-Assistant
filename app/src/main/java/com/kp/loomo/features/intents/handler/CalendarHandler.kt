@@ -73,10 +73,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         for (mustHave in mustHave) {
             for (keyword in keywords) {
                 if (keyword == "make" || keyword == "create" && intentMessage.contains(
-                        keyword,
-                        true
-                    )
-                ) {
+                        keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
                             val startTime = toTimeNumber(time)
@@ -94,36 +91,38 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                     }
                     return "Sorry, couldn't make the appointment"
                 } else if (keyword == "delete" || keyword == "cancel" && intentMessage.contains(
-                        keyword,
-                        true
-                    )
-                ) {
+                        keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
                             val finding = sharedPrefs.getBoolean(time, true)
                             if (finding.equals(true)) {
+                                val findString = sharedPrefs.getString(time, "")
                                 editor.putString(time, "delete")
                                 editor.apply()
+                                return "Got it. Delete $findString on $time."
+                                //if boolean is true, then the appointment exists and this will change name
+                                //else it does not exist and nothing is to be done
                             }
                             //delete --> false?
-
-                            return "Got it. Delete appointment on $time."
+                            return "No appointment at that time" // if time is recognized, but there is no appointment
                         }
                     }
-                    return "Sorry, couldn't find the appointment to delete."
+                    return "Sorry, couldn't understand the time for the appointment." //keyword is true, but no 'time'
                 } else if (keyword == "tell" || keyword == "return" && intentMessage.contains(
-                        keyword,
-                        true
-                    )
-                ) {
+                        keyword, true)) {
                     for (time in times) {
                         val findings = sharedPrefs.getBoolean(time, true)
-                        return "Your appointments: $findings"
+                        if(findings.equals(true)) { //in need for a better comparison
+                            //if boolean true, then there are appointments for the time
+                            val findingsString = sharedPrefs.getString(time, "")
+                            return "Your appointment: $findingsString"
+                        }
                     }
+                    return "No appointments found."
                 }
                 return "No appointments found."
             }
-            return "Sorry, there has been a mistake."
+            return "Sorry, couldn't understand what you want to do."
         }
         return ""
     }
@@ -158,7 +157,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         return 0
     }
 
-    class appointment{
+    /*class appointment{
         var event: String? = null
         var dateTime: String? = null
 
@@ -176,7 +175,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
             println(i)
         }
         return e
-    }
+    }*/
 
 
 /**
