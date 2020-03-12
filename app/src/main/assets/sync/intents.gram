@@ -10,3 +10,7 @@ private <system_settings> = ([set] (brightness | volume ) [to] [<numbers>] [perc
 private <numbers> = (zero | ten | twenty | thirty | forty | fifty | sixty | seventy | eighty | ninety | one hundred);
 private <online> = ([are you | am i ] (online | offline) ) | ([do i have] internet [connection]);
 public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time> | <online>;
+private <calendar> = (make | create | delete | cancel | tell | return) (appointment | meeting | plan | schedule) [at] [<hours>];
+private <hours> = (one | two | three | four | five | six | seven | eight | nine | ten | eleven | twelve) (am | pm);
+private <weather> = (weather | rain);
+public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time> | <calendar> | <weather>;
