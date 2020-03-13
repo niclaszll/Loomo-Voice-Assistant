@@ -17,19 +17,19 @@ class CalculatorHandler : IntentMessageHandler {
         val secondNumber = intentMessage.queryResult.parameters.fieldsMap["number2"]!!.numberValue
 
 		val operation = intentMessage.queryResult.parameters.fieldsMap["operation"]!!.stringValue
-		if(operation == "Addition){
+		if (operation == "Addition) {
 			val sum = firstNumber + secondNumber
 			return "${sum.toInt()}, right?"
-		}else if(operation == "Subtraction"){
+		} else if (operation == "Subtraction") {
 			val sub = firstNumber - secondNumber
 			return "${sub.toInt()}, right?"
-		}else if(operation == "Multiplication"){
+		} else if (operation == "Multiplication") {
 			val mul = firstNumber * secondNumber
 			return "${mul.toInt()}, right?"
-		}else if(operation == "Quotient"){
+		} else if (operation == "Quotient") {
 			val div = firstNumber / secondNumber
 			return "${div.toInt()}, right?"
-		}else{
+		} else {
 			return "Not a valid operation."
 		}   
     }
