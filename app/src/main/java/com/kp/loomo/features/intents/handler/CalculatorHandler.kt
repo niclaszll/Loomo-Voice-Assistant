@@ -17,7 +17,7 @@ class CalculatorHandler : IntentMessageHandler {
         val secondNumber = intentMessage.queryResult.parameters.fieldsMap["number2"]!!.numberValue
 
 		val operation = intentMessage.queryResult.parameters.fieldsMap["operation"]!!.stringValue
-		if (operation == "Addition) {
+		if (operation == "Addition") {
 			val sum = firstNumber + secondNumber
 			return "${sum.toInt()}, right?"
 		} else if (operation == "Subtraction") {
