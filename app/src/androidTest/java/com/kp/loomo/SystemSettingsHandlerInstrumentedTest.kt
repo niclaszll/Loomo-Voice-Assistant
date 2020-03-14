@@ -21,6 +21,16 @@ class SystemSettingsHandlerInstrumentedTest {
     private lateinit var systemSettingsHandler: SystemSettingsHandler
     private lateinit var systemSettingsManager: SystemSettingsManager
 
+    private val intentMessages = mapOf(
+        "set volume to ten percent" to "Setting volume to 10%",
+        "set brightness to ten percent" to "Setting brightness to 10%",
+        "brightness fifty percent" to "Setting brightness to 50%",
+        "volume fifty percent" to "Setting volume to 50%",
+        "brightness ninety" to "Setting brightness to 90%",
+        "volume ninety" to "Setting volume to 90%"
+    )
+    private val intentMessagesWrong = arrayOf("follow", "weather")
+
     private val systemSettingsIntent =
         com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
             .queryResultBuilder.intentBuilder.setDisplayName("SystemSettings").build()
@@ -85,5 +95,80 @@ class SystemSettingsHandlerInstrumentedTest {
         val result = systemSettingsHandler.handle(intentMessage)
 
         assertEquals("Setting brightness to 40%", result)
+    }
+
+    @Test
+    fun testHandle_volume() {
+
+        // Parameter Map for parameter builder
+        val paramMap = mapOf<String, Value>(
+            "SystemSettingsCmd" to Value.newBuilder().setStringValue("volume").build(),
+            "percentage" to Value.newBuilder().setStringValue("60%").build()
+        )
+
+        // Parameters to put in queryResult
+        val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.parametersBuilder.putAllFields(paramMap)
+
+        val queryResult = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.setIntent(timerIntent).setParameters(params).build()
+
+        val intentMessage = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .setQueryResult(queryResult).build()
+
+        val result = systemSettingsHandler.handle(intentMessage)
+
+        assertEquals("Setting volume to 60%", result)
+    }
+
+    @Test
+    fun testHandle_mute() {
+
+        // Parameter Map for parameter builder
+        val paramMap = mapOf<String, Value>(
+            "SystemSettingsCmd" to Value.newBuilder().setStringValue("mute").build(),
+            "percentage" to Value.newBuilder().setStringValue("").build()
+        )
+
+        // Parameters to put in queryResult
+        val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.parametersBuilder.putAllFields(paramMap)
+
+        val queryResult = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.setIntent(timerIntent).setParameters(params).build()
+
+        val intentMessage = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .setQueryResult(queryResult).build()
+
+        val result = systemSettingsHandler.handle(intentMessage)
+
+        assertEquals("Set volume to 0", result)
+    }
+
+    @Test
+    fun testCanHandleOffline_match() {
+
+        for ((msg,res) in intentMessages) {
+            val result = systemSettingsHandler.canHandleOffline(msg)
+            assertTrue(result)
+        }
+    }
+
+    @Test
+    fun testCanHandleOffline_noMatch() {
+
+        for (intentMessage in intentMessagesWrong) {
+            val result = systemSettingsHandler.canHandleOffline(intentMessage)
+            assertFalse(result)
+        }
+    }
+
+    @Test
+    fun testHandleOffline() {
+
+        for ((msg,res) in intentMessages) {
+            val result = systemSettingsHandler.handleOffline(msg)
+            assertEquals(res, result)
+        }
     }
 }

@@ -17,6 +17,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.google.cloud.speech.v1.*
 import com.kp.loomo.R
+import com.kp.loomo.commons.extensions.util.NetworkUtils
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
@@ -72,7 +73,7 @@ class StartpagePresenter @Inject constructor(
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        if (hasInternetConnection()) {
+        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             robotManager.initRobotConnection(this, true)
             initAndroidTTS(true)
 
@@ -131,7 +132,7 @@ class StartpagePresenter @Inject constructor(
      */
     override fun initManualSpeech() {
 
-        if (hasInternetConnection()) {
+        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             // online
             startAudioRecording(true)
 
@@ -305,14 +306,6 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
-    /**
-     * Check if internet connection available
-     */
-    private fun hasInternetConnection(): Boolean {
-        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting == true
-    }
-
     override fun takeView(view: StartpageContract.View) {
         this.startpageFragment = view
     }
@@ -326,10 +319,8 @@ class StartpagePresenter @Inject constructor(
         }
         startpageFragment = null
         pocketSphinxManager.shutdown()
-        releaseTts()
-    }
 
-    private fun releaseTts() {
+        // release TTS
         if (mTTS != null) {
             mTTS!!.stop()
             mTTS!!.shutdown()
