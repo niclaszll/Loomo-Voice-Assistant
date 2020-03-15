@@ -19,9 +19,7 @@ class FollowRobotHandler constructor(private var robotManager: RobotManager) :
 
     override fun handle(intentMessage: DetectIntentResponse): String {
 
-        val cmd = intentMessage.queryResult.parameters.fieldsMap["FollowCommand"]!!.listValue.getValues(0).stringValue
-
-        Log.d(TAG, cmd)
+        val cmd = intentMessage.queryResult.parameters.fieldsMap["FollowCommand"]!!.stringValue
 
         if (cmd == "Start") {
             robotManager.actionInitiateTrack()
