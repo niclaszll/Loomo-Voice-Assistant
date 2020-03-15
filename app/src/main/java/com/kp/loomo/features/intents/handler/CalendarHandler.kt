@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-private val TAG = "CalendarHandler"
+private const val TAG = "CalendarHandler"
 
 class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): IntentMessageHandler {
 

@@ -5,7 +5,7 @@ import com.kp.loomo.features.intents.IntentMessageHandler
 import com.kp.loomo.features.robot.RobotManager
 import javax.inject.Inject
 
-private val TAG = "GeneralRobotHandler"
+private const val TAG = "GeneralRobotHandler"
 
 class GeneralRobotHandler constructor(private var robotManager: RobotManager) :
     IntentMessageHandler {

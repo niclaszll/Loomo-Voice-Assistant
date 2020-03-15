@@ -4,7 +4,7 @@ import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 import com.kp.loomo.features.robot.SystemSettingsManager
 
-private val TAG = "FollowRobotHandler"
+private const val TAG = "FollowRobotHandler"
 
 class SystemSettingsHandler constructor(private var systemSettingsManager: SystemSettingsManager) :
     IntentMessageHandler {
