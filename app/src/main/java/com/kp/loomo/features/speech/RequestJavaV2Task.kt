@@ -4,7 +4,7 @@ import android.os.AsyncTask
 import com.google.cloud.dialogflow.v2beta1.*
 
 class RequestJavaV2Task internal constructor(
-    private var dialogFlowManager: DialogFlowManager,
+    private var dialogflowManager: DialogflowManager,
     private val session: SessionName,
     private val sessionsClient: SessionsClient,
     private val queryInput: QueryInput
@@ -26,7 +26,7 @@ class RequestJavaV2Task internal constructor(
     }
 
     override fun onPostExecute(response: DetectIntentResponse?) {
-        dialogFlowManager.handleDialogflowResponse(response)
+        dialogflowManager.handleDialogflowResponse(response)
     }
 
 }

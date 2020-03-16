@@ -35,10 +35,15 @@ class SystemSettingsHandler constructor(private var systemSettingsManager: Syste
         if (cmd == "") return intentMessage.queryResult.fulfillmentText
 
         val rawValue = intentMessage.queryResult.parameters.fieldsMap["percentage"]!!.stringValue
-        if (rawValue == "") return intentMessage.queryResult.fulfillmentText
+        if (rawValue == "" && cmd != "mute") return intentMessage.queryResult.fulfillmentText
 
-        var value = intentMessage.queryResult.parameters.fieldsMap["percentage"]!!.stringValue.trim()
-            .trim("%".single()).toInt()
+        var value: Int
+
+        value = if (rawValue == "") {
+            0
+        } else {
+            rawValue.trim().trim("%".single()).toInt()
+        }
         if (value !in 0..100) value = 50
 
 

@@ -3,7 +3,6 @@ package com.kp.loomo.features.startpage
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
@@ -39,7 +38,7 @@ class StartpagePresenter @Inject constructor(
     private var applicationContext: Context,
     private var pocketSphinxManager: PocketSphinxManager,
     private var connectivityManager: ConnectivityManager,
-    private var dialogFlowManager: DialogFlowManager,
+    private var dialogflowManager: DialogflowManager,
     private var robotManager: RobotManager,
     private var intentHandler: IntentHandler,
     private var timerManager: TimerManager,
@@ -77,7 +76,7 @@ class StartpagePresenter @Inject constructor(
             robotManager.initRobotConnection(this, true)
             initAndroidTTS(true)
 
-            dialogFlowManager.init(this)
+            dialogflowManager.init(this)
             timerManager.init(this)
 
         } else {
@@ -133,11 +132,8 @@ class StartpagePresenter @Inject constructor(
     override fun initManualSpeech() {
 
         if (NetworkUtils.hasInternetConnection(connectivityManager)) {
-            // online
             startAudioRecording(true)
-
         } else {
-            // offline
             startAudioRecording(false)
         }
     }
@@ -197,13 +193,13 @@ class StartpagePresenter @Inject constructor(
                         when {
                             // handle recognized text
                             response!!.resultsCount > 0 -> {
-                                startpageFragment!!.showText(
+                                startpageFragment?.showText(
                                     response.getResults(0).getAlternatives(
                                         0
                                     ).transcript, OutputView.RSP
                                 )
                                 //send to Dialogflow
-                                dialogFlowManager.sendToDialogflow(
+                                dialogflowManager.sendToDialogflow(
                                     response.getResults(0).getAlternatives(
                                         0
                                     ).transcript

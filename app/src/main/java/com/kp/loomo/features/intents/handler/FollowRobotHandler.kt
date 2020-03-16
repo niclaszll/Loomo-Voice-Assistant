@@ -1,10 +1,8 @@
 package com.kp.loomo.features.intents.handler
 
-import android.util.Log
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 import com.kp.loomo.features.robot.RobotManager
-import javax.inject.Inject
 
 private const val TAG = "FollowRobotHandler"
 

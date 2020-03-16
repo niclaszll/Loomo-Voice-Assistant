@@ -2,10 +2,7 @@ package com.kp.loomo.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.kp.loomo.features.intents.IntentHandler
-import com.kp.loomo.features.intents.handler.MoveRobotHandler
-import com.kp.loomo.features.robot.RobotManager
-import com.kp.loomo.features.speech.DialogFlowManager
+import com.kp.loomo.features.speech.DialogflowManager
 import com.kp.loomo.features.speech.GoogleCloudTTSManager
 import com.kp.loomo.features.speech.PocketSphinxManager
 import dagger.Module
@@ -23,8 +20,8 @@ class SpeechModule {
 
     @Provides
     @Singleton
-    fun provideDialogflow(context: Context): DialogFlowManager {
-        return DialogFlowManager(context)
+    fun provideDialogflow(context: Context): DialogflowManager {
+        return DialogflowManager(context)
     }
 
     @Provides
