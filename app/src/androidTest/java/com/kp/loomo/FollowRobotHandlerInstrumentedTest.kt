@@ -142,4 +142,13 @@ class FollowRobotHandlerInstrumentedTest {
             assertFalse(result)
         }
     }
+
+    @Test
+    fun testHandleOffline() {
+
+        for ((msg,res) in intentMessages) {
+            val result = followRobotHandler.handleOffline(msg)
+            assertEquals(res, result)
+        }
+    }
 }

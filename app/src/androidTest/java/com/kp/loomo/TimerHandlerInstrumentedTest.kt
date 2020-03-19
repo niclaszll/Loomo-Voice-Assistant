@@ -209,6 +209,8 @@ class TimerHandlerInstrumentedTest {
     fun testHandle_stopTimer() {
 
         timerManager.setTimer(10, 0)
+        // because of async creation
+        Thread.sleep(200)
 
         // Parameter Map for parameter builder
         val paramMap = mapOf<String, Value>(
