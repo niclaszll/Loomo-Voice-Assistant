@@ -29,7 +29,7 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(DateTimeHandler())
         listOfHandler.add(OnlineTestHandler(connectivityManager))
         listOfHandler.add(WeatherHandler())
-        //listOfHandler.add(QuizHandler())
+        listOfHandler.add(QuizHandler())
     }
 
     /**
