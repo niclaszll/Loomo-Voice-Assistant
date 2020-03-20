@@ -35,11 +35,11 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         return formatter.format(this)
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTime"]!!.stringValue
+        val dateTimeStart = intentMessage.queryResult.parameters.fieldsMap["dateTimeStart"]!!.stringValue
         val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
        /* val message = intentMessage.queryResult.fulfillmentText
         */
-        return "Got it. $event on $dateTime"
+        return "Got it. $event on $dateTimeStart . "
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
@@ -83,7 +83,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                             val appMap = mapOf(startTime to x, endTime to "y")
                             //what if the key is time?
                             editor.putBoolean(time, true)
-                            editor.putString(time, mustHave.toString() + appMap)
+                            editor.putString(time, mustHave + appMap)
                             editor.apply()
                             return "Got it. $x at $startTime"
 
