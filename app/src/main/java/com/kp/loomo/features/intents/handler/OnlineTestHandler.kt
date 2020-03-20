@@ -3,6 +3,7 @@ package com.kp.loomo.features.intents.handler
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
+import com.kp.loomo.commons.extensions.util.NetworkUtils
 import com.kp.loomo.features.intents.IntentMessageHandler
 
 private const val TAG = "OnlineTestHandler"
@@ -17,7 +18,7 @@ class OnlineTestHandler constructor(private var connectivityManager: Connectivit
     }
 
     override fun handle(intentMessage: DetectIntentResponse): String {
-        return if (hasInternetConnection()) {
+        return if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             "I am currently online."
         } else {
             "I am currently offline."
@@ -34,19 +35,10 @@ class OnlineTestHandler constructor(private var connectivityManager: Connectivit
     }
 
     override fun handleOffline(intentMessage: String): String {
-        return if (hasInternetConnection()) {
+        return if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             "I am currently online."
         } else {
             "I am currently offline."
         }
-    }
-
-    /**
-     * Check if internet connection available
-     */
-
-    private fun hasInternetConnection(): Boolean {
-        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting == true
     }
 }

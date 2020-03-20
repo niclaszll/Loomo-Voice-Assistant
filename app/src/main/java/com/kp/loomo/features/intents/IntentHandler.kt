@@ -8,7 +8,6 @@ import com.kp.loomo.features.intents.handler.*
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
 import com.kp.loomo.features.robot.TimerManager
-import com.kp.loomo.features.startpage.StartpagePresenter
 import javax.inject.Inject
 
 /**
@@ -24,7 +23,7 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(FollowRobotHandler(robotManager))
         listOfHandler.add(GeneralRobotHandler(robotManager))
         listOfHandler.add(CalendarHandler(sharedPreferences))
-        listOfHandler.add(SystemHandler(systemSettingsManager))
+        listOfHandler.add(SystemSettingsHandler(systemSettingsManager))
         listOfHandler.add(TimerHandler(timeManager))
         listOfHandler.add(DateTimeHandler())
         listOfHandler.add(OnlineTestHandler(connectivityManager))

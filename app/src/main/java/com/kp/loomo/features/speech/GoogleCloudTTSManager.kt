@@ -10,7 +10,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 
-class GoogleCloudTTSManager  @Inject constructor(private var sharedPrefs: SharedPreferences) {
+class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedPreferences) {
 
     private var mediaPlayer: MediaPlayer? = null
     private val apiKey = BuildConfig.GoogleSecAPIKEY

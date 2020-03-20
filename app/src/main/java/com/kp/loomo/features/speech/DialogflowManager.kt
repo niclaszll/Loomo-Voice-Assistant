@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 private const val TAG = "DialogflowManager"
 
-class DialogFlowManager @Inject constructor(private var applicationContext: Context) {
+class DialogflowManager @Inject constructor(private var applicationContext: Context) {
 
     private var sessionsClient: SessionsClient? = null
     private var session: SessionName? = null

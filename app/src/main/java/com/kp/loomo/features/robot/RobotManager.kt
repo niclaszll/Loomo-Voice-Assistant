@@ -12,7 +12,6 @@ import com.segway.robot.sdk.locomotion.sbv.Base
 import com.segway.robot.sdk.vision.DTS
 import com.segway.robot.sdk.vision.Vision
 import com.segway.robot.sdk.voice.Recognizer
-import com.segway.robot.sdk.voice.Speaker
 import com.segway.robot.sdk.voice.recognition.WakeupListener
 import com.segway.robot.sdk.voice.recognition.WakeupResult
 import com.segway.robot.sdk.voice.tts.TtsListener
@@ -52,9 +51,9 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     private var mDts: DTS? = null
 
-    private var isVisionBind = false
-    private var isHeadBind = false
-    private var isBaseBind = false
+    private var isVisionBound = false
+    private var isHeadBound = false
+    private var isBaseBound = false
 
     private var startpagePresenter: StartpagePresenter? = null
 
@@ -87,19 +86,19 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
         mBase!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
-                isBaseBind = true
+                isBaseBound = true
                 Log.d(TAG, "Base service onBind")
             }
 
             override fun onUnbind(s: String) {
-                isBaseBind = false
+                isBaseBound = false
                 Log.d(TAG, "Base service onUnbind")
             }
         })
 
         mVision!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
-                isVisionBind = true
+                isVisionBound = true
                 mDts = mVision!!.dts
                 mDts?.setVideoSource(DTS.VideoSource.CAMERA)
                 mDts?.start()
@@ -107,14 +106,14 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
 
             override fun onUnbind(s: String) {
-                isVisionBind = false
+                isVisionBound = false
                 Log.d(TAG, "Vision service onUnbind")
             }
         })
 
         mHead!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
-                isHeadBind = true
+                isHeadBound = true
                 resetHead()
                 mHeadPIDController.init(HeadControlHandlerImpl(mHead!!))
                 mHeadPIDController.headFollowFactor = 1.0f
@@ -122,7 +121,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
 
             override fun onUnbind(s: String) {
-                isHeadBind = false
+                isHeadBound = false
                 Log.d(TAG, "Head service onUnbind")
             }
         })
@@ -312,28 +311,30 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      */
     fun drive(direction: String) {
 
-        mBase?.controlMode = Base.CONTROL_MODE_RAW
+        if (mBase != null && isBaseBound) {
+            mBase?.controlMode = Base.CONTROL_MODE_RAW
 
-        when (direction) {
-            "forward" -> {
-                mBase?.setLinearVelocity(1.0f)
-                mBase?.setAngularVelocity(0.15f)
-            }
-            "backward" -> {
-                mBase?.setLinearVelocity(-1.0f)
-                mBase?.setAngularVelocity(-0.15f)
-            }
-            "right" -> {
-                mBase?.setLinearVelocity(0f)
-                mBase?.setAngularVelocity(-1.5708f)
-            }
-            "left" -> {
-                mBase?.setLinearVelocity(0f)
-                mBase?.setAngularVelocity(1.5708f)
-            }
-            "turn" -> {
-                mBase?.setLinearVelocity(0f)
-                mBase?.setAngularVelocity(3.14159f)
+            when (direction) {
+                "forward" -> {
+                    mBase?.setLinearVelocity(1.0f)
+                    mBase?.setAngularVelocity(0.15f)
+                }
+                "backward" -> {
+                    mBase?.setLinearVelocity(-1.0f)
+                    mBase?.setAngularVelocity(-0.15f)
+                }
+                "right" -> {
+                    mBase?.setLinearVelocity(0f)
+                    mBase?.setAngularVelocity(-1.5708f)
+                }
+                "left" -> {
+                    mBase?.setLinearVelocity(0f)
+                    mBase?.setAngularVelocity(1.5708f)
+                }
+                "turn" -> {
+                    mBase?.setLinearVelocity(0f)
+                    mBase?.setAngularVelocity(3.14159f)
+                }
             }
         }
     }
@@ -342,28 +343,34 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      * Initiate tracking
      */
     fun actionInitiateTrack() {
-        if (mCurrentState === RobotStateType.INITIATE_TRACK) {
-            return
-        } else if (mCurrentState === RobotStateType.INITIATE_DETECT) {
-            Log.d(TAG, "Please terminate detecting first.")
-            return
+
+        if (isServicesAvailable()) {
+            if (mCurrentState === RobotStateType.INITIATE_TRACK) {
+                return
+            } else if (mCurrentState === RobotStateType.INITIATE_DETECT) {
+                Log.d(TAG, "Please terminate detecting first.")
+                return
+            }
+            startTime = System.currentTimeMillis()
+            mCurrentState = RobotStateType.INITIATE_TRACK
+            mDts?.startPersonTracking(null, 60 * 1000 * 1000.toLong(), mPersonTrackingListener)
+            Log.d(TAG, "initiate tracking....")
         }
-        startTime = System.currentTimeMillis()
-        mCurrentState = RobotStateType.INITIATE_TRACK
-        mDts?.startPersonTracking(null, 60 * 1000 * 1000.toLong(), mPersonTrackingListener)
-        Log.d(TAG, "initiate tracking....")
     }
 
     /**
      * Stop tracking
      */
     fun actionTerminateTrack() {
-        if (mCurrentState === RobotStateType.INITIATE_TRACK) {
-            mCurrentState = RobotStateType.TERMINATE_TRACK
-            mDts!!.stopPersonTracking()
-            Log.d(TAG, "terminate tracking....")
-        } else {
-            Log.d(TAG, "The app is not in tracking mode yet.")
+
+        if (isServicesAvailable()) {
+            if (mCurrentState === RobotStateType.INITIATE_TRACK) {
+                mCurrentState = RobotStateType.TERMINATE_TRACK
+                mDts!!.stopPersonTracking()
+                Log.d(TAG, "terminate tracking....")
+            } else {
+                Log.d(TAG, "The app is not in tracking mode yet.")
+            }
         }
     }
 
@@ -371,30 +378,36 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      * Reset head when timeout
      */
     fun resetHead() {
-        mHead!!.mode = Head.MODE_SMOOTH_TACKING
-        mHead!!.setWorldYaw(0f)
-        mHead!!.setWorldPitch(0.7f)
+
+        if (mHead != null && isHeadBound) {
+            mHead!!.mode = Head.MODE_SMOOTH_TACKING
+            mHead!!.setWorldYaw(0f)
+            mHead!!.setWorldPitch(0.7f)
+        }
     }
 
     fun lookDirection(direction: String) {
-        mHead!!.mode = Head.MODE_SMOOTH_TACKING
 
-        when (direction) {
-            "forward" -> {
-                mHead!!.setWorldYaw(0f)
-                mHead!!.setWorldPitch(0.7f)
-            }
-            "backward" -> {
-                mHead!!.setWorldYaw(3.14f)
-                mHead!!.setWorldPitch(0.7f)
-            }
-            "right" -> {
-                mHead!!.setWorldYaw(-1.57f)
-                mHead!!.setWorldPitch(0.7f)
-            }
-            "left" -> {
-                mHead!!.setWorldYaw(1.57f)
-                mHead!!.setWorldPitch(0.7f)
+        if (mHead != null && isHeadBound) {
+            mHead!!.mode = Head.MODE_SMOOTH_TACKING
+
+            when (direction) {
+                "forward" -> {
+                    mHead!!.setWorldYaw(0f)
+                    mHead!!.setWorldPitch(0.7f)
+                }
+                "backward" -> {
+                    mHead!!.setWorldYaw(3.14f)
+                    mHead!!.setWorldPitch(0.7f)
+                }
+                "right" -> {
+                    mHead!!.setWorldYaw(-1.57f)
+                    mHead!!.setWorldPitch(0.7f)
+                }
+                "left" -> {
+                    mHead!!.setWorldYaw(1.57f)
+                    mHead!!.setWorldPitch(0.7f)
+                }
             }
         }
     }
@@ -403,7 +416,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
      * Check if moving services available
      */
     fun isServicesAvailable(): Boolean {
-        return isVisionBind && isHeadBind && isBaseBind
+        return isVisionBound && isHeadBound && isBaseBound
     }
 
     /**
