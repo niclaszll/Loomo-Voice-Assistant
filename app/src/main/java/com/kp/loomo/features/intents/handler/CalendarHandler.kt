@@ -36,12 +36,6 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
 
-        val dateTimeStart = intentMessage.queryResult.parameters.fieldsMap["dateTimeStart"]!!.stringValue
-        val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
-       /* val message = intentMessage.queryResult.fulfillmentText
-        */
-        return "Got it. $event on $dateTimeStart . "
-
         val dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTimeStart"]!!.stringValue
         if (dateTime == "") return intentMessage.queryResult.fulfillmentText
         val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
