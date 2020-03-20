@@ -25,7 +25,6 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
 
         Log.d(TAG, "Initializing PocketSphinx ...")
         responseHandler = handler
-
         runRecognizerSetup()
     }
 
@@ -34,7 +33,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      * so we execute it in async task
      */
     @SuppressLint("StaticFieldLeak")
-    fun runRecognizerSetup() {
+    private fun runRecognizerSetup() {
 
         object : AsyncTask<Void?, Void?, Exception?>() {
             override fun doInBackground(vararg params: Void?): Exception? {

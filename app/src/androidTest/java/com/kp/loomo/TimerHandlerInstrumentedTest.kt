@@ -25,13 +25,15 @@ class TimerHandlerInstrumentedTest {
         .queryResultBuilder.intentBuilder.setDisplayName("Timer").build()
 
     // Intent with displayName "TimerCommand"
-    private val timerCommandIntent = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
-        .queryResultBuilder.intentBuilder.setDisplayName("TimerCommand").build()
+    private val timerCommandIntent =
+        com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.intentBuilder.setDisplayName("TimerCommand").build()
 
     // Intent with displayName "Calendar"
-    private val calendarIntent = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
-        .queryResultBuilder.intentBuilder.setDisplayName("Calendar").build()
-    
+    private val calendarIntent =
+        com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
+            .queryResultBuilder.intentBuilder.setDisplayName("Calendar").build()
+
     @Before
     fun initClasses() {
         timerManager = TimerManager(appContext)
@@ -73,7 +75,10 @@ class TimerHandlerInstrumentedTest {
     fun testHandle_onlySeconds() {
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("seconds" to Value.newBuilder().setNumberValue(10.0).build(), "minutes" to Value.newBuilder().setNumberValue(0.0).build())
+        val paramMap = mapOf<String, Value>(
+            "seconds" to Value.newBuilder().setNumberValue(10.0).build(),
+            "minutes" to Value.newBuilder().setNumberValue(0.0).build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -88,14 +93,16 @@ class TimerHandlerInstrumentedTest {
         val result = timerHandler.handle(intentMessage)
 
         assertEquals("Setting timer for 10 seconds.", result)
-        assertNotEquals("Setting timer for 11 seconds.", result)
     }
 
     @Test
     fun testHandle_onlyMinutes() {
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("seconds" to Value.newBuilder().setNumberValue(0.0).build(), "minutes" to Value.newBuilder().setNumberValue(21.0).build())
+        val paramMap = mapOf<String, Value>(
+            "seconds" to Value.newBuilder().setNumberValue(0.0).build(),
+            "minutes" to Value.newBuilder().setNumberValue(21.0).build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -110,14 +117,16 @@ class TimerHandlerInstrumentedTest {
         val result = timerHandler.handle(intentMessage)
 
         assertEquals("Setting timer for 21 minutes.", result)
-        assertNotEquals("Setting timer for 5 minutes.", result)
     }
 
     @Test
     fun testHandle_secondsAndMinutes() {
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("seconds" to Value.newBuilder().setNumberValue(34.0).build(), "minutes" to Value.newBuilder().setNumberValue(2.0).build())
+        val paramMap = mapOf<String, Value>(
+            "seconds" to Value.newBuilder().setNumberValue(34.0).build(),
+            "minutes" to Value.newBuilder().setNumberValue(2.0).build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -132,7 +141,6 @@ class TimerHandlerInstrumentedTest {
         val result = timerHandler.handle(intentMessage)
 
         assertEquals("Setting timer for 2 minutes and 34 seconds.", result)
-        assertNotEquals("Setting timer for 3 minutes and 22 seconds.", result)
     }
 
     @Test
@@ -144,7 +152,9 @@ class TimerHandlerInstrumentedTest {
         Thread.sleep(200)
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("timerCommand" to Value.newBuilder().setStringValue("pause").build())
+        val paramMap = mapOf<String, Value>(
+            "timerCommand" to Value.newBuilder().setStringValue("pause").build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -173,7 +183,9 @@ class TimerHandlerInstrumentedTest {
         timerManager.activeTimer!!.cancel()
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("timerCommand" to Value.newBuilder().setStringValue("resume").build())
+        val paramMap = mapOf<String, Value>(
+            "timerCommand" to Value.newBuilder().setStringValue("resume").build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -187,16 +199,23 @@ class TimerHandlerInstrumentedTest {
 
         val result = timerHandler.handle(intentMessage)
 
-        assertEquals("Resuming timer with ${timerManager.remainingTime / 1000} seconds remaining.", result)
+        assertEquals(
+            "Resuming timer with ${timerManager.remainingTime / 1000} seconds remaining.",
+            result
+        )
     }
 
     @Test
     fun testHandle_stopTimer() {
 
         timerManager.setTimer(10, 0)
+        // because of async creation
+        Thread.sleep(200)
 
         // Parameter Map for parameter builder
-        val paramMap = mapOf<String,Value>("timerCommand" to Value.newBuilder().setStringValue("stop").build())
+        val paramMap = mapOf<String, Value>(
+            "timerCommand" to Value.newBuilder().setStringValue("stop").build()
+        )
 
         // Parameters to put in queryResult
         val params = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -212,7 +231,6 @@ class TimerHandlerInstrumentedTest {
 
         assertEquals("Current timer canceled.", result)
     }
-
 
 
 }
