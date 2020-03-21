@@ -3,7 +3,6 @@ package com.kp.loomo.features.startpage
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
@@ -17,6 +16,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.google.cloud.speech.v1.*
 import com.kp.loomo.R
+import com.kp.loomo.commons.extensions.util.NetworkUtils
 import com.kp.loomo.di.ActivityScoped
 import com.kp.loomo.features.intents.IntentHandler
 import com.kp.loomo.features.robot.RobotManager
@@ -38,7 +38,7 @@ class StartpagePresenter @Inject constructor(
     private var applicationContext: Context,
     private var pocketSphinxManager: PocketSphinxManager,
     private var connectivityManager: ConnectivityManager,
-    private var dialogFlowManager: DialogFlowManager,
+    private var dialogflowManager: DialogflowManager,
     private var robotManager: RobotManager,
     private var intentHandler: IntentHandler,
     private var timerManager: TimerManager,
@@ -63,7 +63,6 @@ class StartpagePresenter @Inject constructor(
     private var requestStream: ClientStream<StreamingRecognizeRequest>? = null
 
     private var mTTS: TextToSpeech? = null
-    private var isManual = false
 
     private var currentResponse: DetectIntentResponse? = null
 
@@ -73,11 +72,11 @@ class StartpagePresenter @Inject constructor(
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        if (hasInternetConnection()) {
+        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             robotManager.initRobotConnection(this, true)
             initAndroidTTS(true)
 
-            dialogFlowManager.init(this)
+            dialogflowManager.init(this)
             timerManager.init(this)
 
         } else {
@@ -131,14 +130,10 @@ class StartpagePresenter @Inject constructor(
      * Initialize Manual speech after button click
      */
     override fun initManualSpeech() {
-        isManual = true
 
-        if (hasInternetConnection()) {
-            // online
+        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
             startAudioRecording(true)
-
         } else {
-            // offline
             startAudioRecording(false)
         }
     }
@@ -190,7 +185,6 @@ class StartpagePresenter @Inject constructor(
                     mAudioEmitter?.stop()
                     mSpeechClient!!.close()
                     mSpeechClient = null
-
                 }
 
                 override fun onResponse(response: StreamingRecognizeResponse?) {
@@ -199,13 +193,13 @@ class StartpagePresenter @Inject constructor(
                         when {
                             // handle recognized text
                             response!!.resultsCount > 0 -> {
-                                startpageFragment!!.showText(
+                                startpageFragment?.showText(
                                     response.getResults(0).getAlternatives(
                                         0
                                     ).transcript, OutputView.RSP
                                 )
                                 //send to Dialogflow
-                                dialogFlowManager.sendToDialogflow(
+                                dialogflowManager.sendToDialogflow(
                                     response.getResults(0).getAlternatives(
                                         0
                                     ).transcript
@@ -308,14 +302,6 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
-    /**
-     * Check if internet connection available
-     */
-    private fun hasInternetConnection(): Boolean {
-        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
-        return activeNetwork?.isConnectedOrConnecting == true
-    }
-
     override fun takeView(view: StartpageContract.View) {
         this.startpageFragment = view
     }
@@ -324,13 +310,13 @@ class StartpagePresenter @Inject constructor(
         // cleanup
         mAudioEmitter?.stop()
         mAudioEmitter = null
-        mSpeechClient!!.shutdown()
+        if (mSpeechClient != null) {
+            mSpeechClient!!.shutdown()
+        }
         startpageFragment = null
         pocketSphinxManager.shutdown()
-        releaseTts()
-    }
 
-    private fun releaseTts() {
+        // release TTS
         if (mTTS != null) {
             mTTS!!.stop()
             mTTS!!.shutdown()

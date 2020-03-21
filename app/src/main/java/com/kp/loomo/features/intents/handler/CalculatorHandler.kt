@@ -3,7 +3,7 @@ package com.kp.loomo.features.intents.handler
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 
-private val TAG = "CalculatorHandler"
+private const val TAG = "CalculatorHandler"
 
 class CalculatorHandler : IntentMessageHandler {
 

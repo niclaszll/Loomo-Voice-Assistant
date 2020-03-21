@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-private val TAG = "CalendarHandler"
+private const val TAG = "CalendarHandler"
 
 class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): IntentMessageHandler {
 
@@ -35,11 +35,15 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
         return formatter.format(this)
     }
     override fun handle(intentMessage: DetectIntentResponse): String {
-        val dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTime"]!!.stringValue
+
+        val dateTime = intentMessage.queryResult.parameters.fieldsMap["dateTimeStart"]!!.stringValue
+        if (dateTime == "") return intentMessage.queryResult.fulfillmentText
         val event = intentMessage.queryResult.parameters.fieldsMap["event"]!!.stringValue
-       /* val message = intentMessage.queryResult.fulfillmentText
-        */
-        return "Got it. $event on $dateTime"
+        if (event == "") return intentMessage.queryResult.fulfillmentText
+        val eventName = intentMessage.queryResult.parameters.fieldsMap["eventName"]!!.stringValue
+        if (eventName == "") return intentMessage.queryResult.fulfillmentText
+        return "Got it. $event $eventName on $dateTime"
+
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
@@ -83,7 +87,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                             val appMap = mapOf(startTime to x, endTime to "y")
                             //what if the key is time?
                             editor.putBoolean(time, true)
-                            editor.putString(time, mustHave.toString() + appMap)
+                            editor.putString(time, mustHave + appMap)
                             editor.apply()
                             return "Got it. $x at $startTime"
 
@@ -111,14 +115,24 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                 } else if (keyword == "tell" || keyword == "return" && intentMessage.contains(
                         keyword, true)) {
                     for (time in times) {
-                        val findings = sharedPrefs.getBoolean(time, true)
+                        val findings = sharedPrefs.getBoolean(time, false)
+                        //see if it exists
                         if(findings.equals(true)) { //in need for a better comparison
                             //if boolean true, then there are appointments for the time
                             val findingsString = sharedPrefs.getString(time, "")
-                            return "Your appointment: $findingsString"
-                        }
+                            return "Your appointment: $findingsString at $time."
+                        } //for findings false
+                        return "No appointment found at that time."
                     }
-                    return "No appointments found."
+                    //if no given time/all appointments
+                    val numbs = listOf("one am", "two am", "three am",
+                        "four am", "five am", "six am", "seven am", "eight am",
+                        "nine am", "ten am", "eleven am", "twelve pm", "one pm",
+                        "two pm", "three pm", "four pm", "five pm", "six pm",
+                        "seven pm", "eight pm", "nine pm", "ten pm", "eleven pm",
+                        "twelve am")//if no time is given, test all times
+                    val findingsString = sharedPrefs.getString("${numbs.forEach{i->i}}", "")
+                    return "Found: $findingsString at ${numbs.forEach{i->i}}"
                 }
                 return "No appointments found."
             }
