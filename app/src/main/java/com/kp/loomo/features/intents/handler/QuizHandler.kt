@@ -7,22 +7,35 @@ private const val TAG = "QuizHandler"
 
 class QuizHandler : IntentMessageHandler {
 
+    private val keywords = arrayOf(
+        "quiz", "question", "questions",
+        "riddle", "task", "cognitive",
+        "brain", "training", "memory",
+        "cognition", "mental",
+        "teaser", "teasers", "jogging"
+    )
+
+
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "Quiz"
     }
 
     override fun handle(intentMessage: DetectIntentResponse): String {
 
-        val answer = intentMessage.queryResult.parameters.fieldsMap["number1"]!!.stringValue
-
-        return "$answer, right?"
+        val question = intentMessage.queryResult.fulfillmentText.toString()
+        return "$question Your answer?"
     }
 
     override fun canHandleOffline(intentMessage: String): Boolean {
+        for (keyword in keywords) {
+            if (intentMessage.contains(keyword, true)) {
+                return true
+            }
+        }
         return false
     }
 
     override fun handleOffline(intentMessage: String): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return "There is no internet connection at the present time. Please try later again."
     }
 }
