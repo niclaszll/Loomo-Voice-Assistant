@@ -3,7 +3,7 @@ package com.kp.loomo.features.intents.handler
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 
-private val TAG = "SmallTalkHandler"
+private const val TAG = "SmallTalkHandler"
 
 class SmallTalkHandler : IntentMessageHandler {
 
@@ -20,5 +20,13 @@ class SmallTalkHandler : IntentMessageHandler {
         val name = intentMessage.queryResult.parameters.fieldsMap["Robotername"]!!.numberValue
         val message = intentMessage.queryResult.fulfillmentText
         return "${message}"
+    }
+
+    override fun canHandleOffline(intentMessage: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun handleOffline(intentMessage: String): String {
+        TODO("Not yet implemented")
     }
 }
