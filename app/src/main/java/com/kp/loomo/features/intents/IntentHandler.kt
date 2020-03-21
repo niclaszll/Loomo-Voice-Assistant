@@ -13,7 +13,13 @@ import javax.inject.Inject
 /**
  * Intent handler that decides which specific handler should continue
  */
-class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, connectivityManager: ConnectivityManager, sharedPreferences: SharedPreferences) {
+class IntentHandler @Inject constructor(
+    robotManager: RobotManager,
+    systemSettingsManager: SystemSettingsManager,
+    timeManager: TimerManager,
+    connectivityManager: ConnectivityManager,
+    sharedPreferences: SharedPreferences
+) {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
     // add all handlers here
@@ -29,6 +35,7 @@ class IntentHandler @Inject constructor(robotManager: RobotManager, systemSettin
         listOfHandler.add(OnlineTestHandler(connectivityManager))
         listOfHandler.add(WeatherHandler())
         listOfHandler.add(QuizHandler())
+        listOfHandler.add(QuizAnswerHandlerHandler())
         listOfHandler.add(SmallTalkHandler())
     }
 
