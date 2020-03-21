@@ -1,10 +1,9 @@
 package com.kp.loomo.di
 
 import android.content.Context
-import com.kp.loomo.features.intents.IntentHandler
-import com.kp.loomo.features.intents.handler.MoveRobotHandler
-import com.kp.loomo.features.robot.RobotManager
-import com.kp.loomo.features.speech.DialogFlowManager
+import android.content.SharedPreferences
+import com.kp.loomo.features.speech.DialogflowManager
+import com.kp.loomo.features.speech.GoogleCloudTTSManager
 import com.kp.loomo.features.speech.PocketSphinxManager
 import dagger.Module
 import dagger.Provides
@@ -21,21 +20,13 @@ class SpeechModule {
 
     @Provides
     @Singleton
-    fun provideDialogflow(context: Context): DialogFlowManager {
-        return DialogFlowManager(context)
+    fun provideDialogflow(context: Context): DialogflowManager {
+        return DialogflowManager(context)
     }
 
-    // TODO move to extra module for robot
     @Provides
     @Singleton
-    fun provideRobotManager(context: Context): RobotManager {
-        return RobotManager(context)
-    }
-
-    // TODO move to extra module for handler
-    @Provides
-    @Singleton
-    fun provideMoveRobotHandler(robotManager: RobotManager): IntentHandler {
-        return IntentHandler(robotManager)
+    fun provideGoogleCloudTTS(sharedPreferences: SharedPreferences): GoogleCloudTTSManager {
+        return GoogleCloudTTSManager(sharedPreferences)
     }
 }

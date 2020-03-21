@@ -1,4 +1,16 @@
 #JSGF V1.0;
 
-grammar mymenu;
-public <smart> = drive (forward | backward | left | right);
+grammar intents;
+
+private <move_robot> = (turn [around]) | ((drive | go ) (forward | backward | backwards | back | left | right));
+private <follow> = [start | stop] (following | follow) [me];
+private <general_robot> = reset [your] head | look [to your] (left | right );
+private <time> = [what] time [is it] [now] | how late is it [now];
+private <system_settings> = ([set] (brightness | volume ) [to] [<numbers>] [percent]);
+private <numbers> = (zero | ten | twenty | thirty | forty | fifty | sixty | seventy | eighty | ninety | one hundred);
+private <online> = ([are you | am i ] (online | offline) ) | ([do i have] internet [connection]);
+public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time> | <online>;
+private <calendar> = (make | create | delete | cancel | tell | return) (appointment | meeting | plan | schedule) [at] [<hours>];
+private <hours> = (one | two | three | four | five | six | seven | eight | nine | ten | eleven | twelve) (am | pm);
+private <weather> = (weather | rain);
+public <result> = <move_robot> | <follow> | <system_settings> | <general_robot> | <time> | <calendar> | <weather> | <online>;

@@ -9,38 +9,32 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 
-private const val TAG = "PocketSphinx"
+private const val TAG = "PocketSphinx Manager"
 
 class PocketSphinxManager @Inject constructor(private var applicationContext: Context) :
     RecognitionListener {
 
-    /* We only need the keyphrase to start recognition, one menu with list of choices,
-       and one word that is required for method switchSearch - it will bring recognizer
-       back to listening for the keyphrase*/
-    private var keywordSearch = "wakeup"
     private var intentSearch = "intent"
-
-    /* Keyword we are looking for to activate recognition */
-    private var keyphrase = "activate"
-
-    /* Recognition object */
     private var recognizer: SpeechRecognizer? = null
-
     private var responseHandler: SpeechResponseHandler? = null
 
-
+    /**
+     * Initialize PocketSphinx
+     */
     fun initPocketSphinx(handler: SpeechResponseHandler) {
 
-        Log.d(TAG, "initializing PocketSphinx ...")
+        Log.d(TAG, "Initializing PocketSphinx ...")
         responseHandler = handler
-
         runRecognizerSetup()
     }
 
+    /**
+     * Recognizer initialization is a time-consuming and it involves IO,
+     * so we execute it in async task
+     */
     @SuppressLint("StaticFieldLeak")
-    fun runRecognizerSetup() {
-        // Recognizer initialization is a time-consuming and it involves IO,
-        // so we execute it in async task
+    private fun runRecognizerSetup() {
+
         object : AsyncTask<Void?, Void?, Exception?>() {
             override fun doInBackground(vararg params: Void?): Exception? {
                 try {
@@ -57,45 +51,45 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
                 if (result != null) {
                     Log.d(TAG, result.message!!)
                 } else {
-                    switchSearch(keywordSearch)
+                    startNewSearch(intentSearch)
                 }
             }
         }.execute()
     }
 
+    /**
+     * Setup recognizers with listeners
+     */
     @Throws(IOException::class)
     private fun setupRecognizer(assetsDir: File) {
         recognizer = SpeechRecognizerSetup.defaultSetup()
-            .setAcousticModel(File(assetsDir, "en-us-ptm"))
+            .setAcousticModel(File(assetsDir, "test_model"))
             .setDictionary(
                 File(
                     assetsDir,
                     "cmudict-en-us.dict"
                 )
             )
-            // Disable this line if you don't want recognizer to save raw
-            // audio files to app's storage
-            //.setRawLogDir(assetsDir)
+            .setSampleRate(16000)
             .recognizer
 
         recognizer?.addListener(this)
 
-        // Create keyword-activation search.
-        recognizer?.addKeyphraseSearch(keywordSearch, keyphrase)
-
-        // Create your custom grammar-based search
+        // Create custom grammar-based search
         val intentGrammar = File(assetsDir, "intents.gram")
         recognizer?.addGrammarSearch(intentSearch, intentGrammar)
+
+        Log.d(TAG, "recording ...")
+        responseHandler?.showText("I'm listening...")
     }
 
 
-    private fun switchSearch(searchName: String) {
+    /**
+     * Start listening for intents
+     */
+    private fun startNewSearch(searchName: String) {
         recognizer?.stop()
-        if (searchName == keywordSearch) {
-            recognizer?.startListening(searchName)
-        } else {
-            recognizer?.startListening(searchName, 10000)
-        }
+        recognizer?.startListening(searchName, 5000)
     }
 
     /**
@@ -105,40 +99,43 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
      */
     override fun onPartialResult(hypothesis: Hypothesis?) {
         if (hypothesis == null) return
-        when (hypothesis.hypstr) {
-            keyphrase -> {
-                Log.d(TAG, "Keyphrase recognized")
-                switchSearch(intentSearch)
-            }
-            else -> {
-                Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
-                switchSearch(keywordSearch)
-            }
-        }
+        Log.d(TAG, "onPartialResult: " + hypothesis.hypstr)
     }
 
+    /**
+     * Handle detected result/hypothesis
+     */
     override fun onResult(hypothesis: Hypothesis?) {
         if (hypothesis != null) {
             Log.d(TAG, "onResult " + hypothesis.hypstr)
-
+            recognizer?.stop()
             responseHandler?.handlePocketSphinxResponse(hypothesis.hypstr)
         }
+    }
+
+    /**
+     * Start listening again if timeout
+     */
+    override fun onTimeout() {
+        Log.d(TAG, "Speech timeout")
+        recognizer?.stop()
+        responseHandler?.handlePocketSphinxResponse("Timeout")
+        //startNewSearch(intentSearch)
+    }
+
+    override fun onBeginningOfSpeech() {}
+
+    override fun onEndOfSpeech() {
+        if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
     }
 
     override fun onError(error: Exception) {
         Log.d(TAG, error.message!!)
     }
 
-    override fun onTimeout() {
-        switchSearch(keywordSearch)
-    }
-
-    override fun onBeginningOfSpeech() {}
-
-    override fun onEndOfSpeech() {
-        if (recognizer?.searchName.equals(keywordSearch)) switchSearch(keywordSearch)
-    }
-
+    /**
+     * Shutdown PocketSphinx
+     */
     fun shutdown() {
         if (recognizer != null) {
             recognizer?.cancel()

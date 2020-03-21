@@ -6,8 +6,8 @@ import com.kp.BaseView
 interface StartpageContract {
 
     interface View : BaseView<Presenter> {
-        fun showText(resourceIdentifier: Int)
-        fun showText(text: String)
+        fun showText(resourceIdentifier: Int, view: OutputView)
+        fun showText(text: String, view: OutputView)
     }
 
     interface Presenter : BasePresenter<View> {
