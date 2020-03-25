@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kp.loomo.features.intents.handler.QuizHandler
+import com.kp.loomo.features.robot.MediaManager
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -14,15 +15,22 @@ import org.junit.runner.RunWith
 class QuizHandlerInstrumentedTest {
 
     private val appContext: Context = InstrumentationRegistry.getInstrumentation().targetContext
+
     private lateinit var quizHandler: QuizHandler
-    //TODO more messages
+    private lateinit var mediaManager: MediaManager
+
+
     private val intentMessages = arrayOf(
         "quiz",
         "another quiz",
         "Brain training",
         "question",
         "questions",
-        "Give me another question"
+        "Give me another question",
+        "a new riddle",
+        "quiz questions",
+        "Memory training",
+        "I want to train my brain"
     )
     private val intentMessagesWrong = arrayOf("timer", "moveRobot")
 
@@ -36,7 +44,8 @@ class QuizHandlerInstrumentedTest {
 
     @Before
     fun initClasses() {
-        quizHandler = QuizHandler()
+        mediaManager = MediaManager(appContext)
+        quizHandler = QuizHandler(mediaManager)
     }
 
     @Test
@@ -72,7 +81,6 @@ class QuizHandlerInstrumentedTest {
 
     @Test
     fun testHandle() {
-        //TODO cases
 
         // queryResult part of intentMessage
         val queryResult = com.google.cloud.dialogflow.v2beta1.DetectIntentResponse.newBuilder()
@@ -84,6 +92,7 @@ class QuizHandlerInstrumentedTest {
 
         val result = quizHandler.handle(intentMessage)
 
+        //result is random question or error text
         assertNotNull(result)
     }
 
@@ -110,7 +119,7 @@ class QuizHandlerInstrumentedTest {
 
         for (intentMessage in intentMessages) {
             val result = quizHandler.handleOffline(intentMessage)
-            assertNotNull(result)
+            assertTrue(result.startsWith("You are offline. So I just have a task for you. Calculate"))
         }
     }
 }

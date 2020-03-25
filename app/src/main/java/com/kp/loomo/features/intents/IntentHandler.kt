@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.handler.*
+import com.kp.loomo.features.robot.MediaManager
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
 import com.kp.loomo.features.robot.TimerManager
@@ -18,7 +19,8 @@ class IntentHandler @Inject constructor(
     systemSettingsManager: SystemSettingsManager,
     timeManager: TimerManager,
     connectivityManager: ConnectivityManager,
-    sharedPreferences: SharedPreferences
+    sharedPreferences: SharedPreferences,
+    mediaManager: MediaManager
 ) {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
@@ -34,8 +36,8 @@ class IntentHandler @Inject constructor(
         listOfHandler.add(DateTimeHandler())
         listOfHandler.add(OnlineTestHandler(connectivityManager))
         listOfHandler.add(WeatherHandler())
-        listOfHandler.add(QuizHandler())
-        listOfHandler.add(QuizAnswerHandlerHandler())
+        listOfHandler.add(QuizHandler(mediaManager))
+        listOfHandler.add(QuizAnswerHandlerHandler(mediaManager))
         listOfHandler.add(SmallTalkHandler())
     }
 
