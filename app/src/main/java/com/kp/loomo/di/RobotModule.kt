@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import com.kp.loomo.features.intents.IntentHandler
+import com.kp.loomo.features.robot.MediaManager
 import com.kp.loomo.features.robot.RobotManager
 import com.kp.loomo.features.robot.SystemSettingsManager
 import com.kp.loomo.features.robot.TimerManager
@@ -22,8 +23,8 @@ class RobotModule {
 
     @Provides
     @Singleton
-    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, connectivityManager: ConnectivityManager, sharedPreferences: SharedPreferences): IntentHandler {
-        return IntentHandler(robotManager, systemSettingsManager, timeManager, connectivityManager, sharedPreferences)
+    fun provideIntentHandler(robotManager: RobotManager, systemSettingsManager: SystemSettingsManager, timeManager: TimerManager, connectivityManager: ConnectivityManager, sharedPreferences: SharedPreferences, mediaManager: MediaManager): IntentHandler {
+        return IntentHandler(robotManager, systemSettingsManager, timeManager, connectivityManager, sharedPreferences, mediaManager)
     }
 
     @Provides
@@ -43,5 +44,11 @@ class RobotModule {
     fun provideSharedPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(
             "SHARED_PREFERENCES", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    fun mediaManager(context: Context): MediaManager {
+        return MediaManager(context)
     }
 }
