@@ -144,10 +144,10 @@ class StartpagePresenter @Inject constructor(
     fun startAudioRecording(online: Boolean) {
 
         Log.d(TAG, "recording ...")
-        showText("I'm listening...")
         val timeoutHandler = Handler(Looper.getMainLooper())
 
         if (online) {
+            showText("I'm listening...")
             val isFirstRequest = AtomicBoolean(true)
             mAudioEmitter = AudioEmitter()
 
