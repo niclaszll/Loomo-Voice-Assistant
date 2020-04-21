@@ -38,7 +38,6 @@ class IntentHandler @Inject constructor(
         listOfHandler.add(WeatherHandler())
         listOfHandler.add(QuizHandler(mediaManager))
         listOfHandler.add(QuizAnswerHandlerHandler(mediaManager))
-        listOfHandler.add(SmallTalkHandler())
     }
 
     /**
