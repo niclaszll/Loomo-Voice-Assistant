@@ -37,7 +37,9 @@ class IntentHandler @Inject constructor(
         listOfHandler.add(OnlineTestHandler(connectivityManager))
         listOfHandler.add(WeatherHandler())
         listOfHandler.add(QuizHandler(mediaManager))
-        listOfHandler.add(QuizAnswerHandlerHandler(mediaManager))
+        listOfHandler.add(QuizAnswerHandler(mediaManager))
+        listOfHandler.add(MusicHandler(mediaManager))
+        listOfHandler.add(StopMusicHandler(mediaManager))
     }
 
     /**
