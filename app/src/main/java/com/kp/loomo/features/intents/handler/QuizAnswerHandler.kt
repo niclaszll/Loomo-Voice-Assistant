@@ -6,7 +6,7 @@ import com.kp.loomo.features.robot.MediaManager
 
 private const val TAG = "QuizAnswerHandler"
 
-class QuizAnswerHandlerHandler(private val mediaManager: MediaManager) : IntentMessageHandler {
+class QuizAnswerHandler(private val mediaManager: MediaManager) : IntentMessageHandler {
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
         return intentMessage.queryResult.intent.displayName == "Quiz.answer"
