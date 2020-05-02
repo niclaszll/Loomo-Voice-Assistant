@@ -117,13 +117,12 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
     }
 
     /**
-     * Start listening again if timeout
+     * Handle timeout
      */
     override fun onTimeout() {
         Log.d(TAG, "Speech timeout")
         recognizer?.stop()
         responseHandler?.handlePocketSphinxResponse("Timeout")
-        //startNewSearch(intentSearch)
     }
 
     override fun onBeginningOfSpeech() {}
