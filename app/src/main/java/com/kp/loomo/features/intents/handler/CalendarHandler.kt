@@ -140,7 +140,8 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                             val finding = sharedPrefs.getBoolean(time, false)
                             if (finding == true) {
                                 val findString = sharedPrefs.getString(time, "")
-                                editor.putString(time, "delete")
+                                editor.putBoolean(time, false) //set spot free
+                                editor.putString(time, "")
                                 editor.apply()
                                 return "Got it. Delete $findString on $time."
                                 //if boolean is true, then the appointment exists and this will change name
@@ -160,7 +161,8 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                             val finding = sharedPrefs.getBoolean(time, false)
                             if (finding == true) {
                                 val findString = sharedPrefs.getString(time, "")
-                                editor.putString(time, "delete")
+                                editor.putBoolean(time, false) //set spot free
+                                editor.putString(time, "")
                                 editor.apply()
                                 return "Got it. Cancel $findString on $time."
                                 //if boolean is true, then the appointment exists and this will change name
