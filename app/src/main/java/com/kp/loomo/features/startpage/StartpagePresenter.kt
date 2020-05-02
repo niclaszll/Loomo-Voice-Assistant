@@ -66,52 +66,80 @@ class StartpagePresenter @Inject constructor(
 
     private var currentResponse: DetectIntentResponse? = null
 
+    private var isOnline = false
+    private var onlineServicesInitialized = false
+
     /**
      * Initialize all speech services
      */
     override fun initSpeech() {
         Log.d(TAG, "initializing speech...")
 
-        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
-            robotManager.initRobotConnection(this, true)
-            initAndroidTTS(true)
+        robotManager.initRobotConnection(this)
+        initAndroidTTS()
 
-            dialogflowManager.init(this)
-            timerManager.init(this)
+        checkInternetConnection()
 
+        if (isOnline) {
+            initOnlineServices()
+            showText("Manual voice input available, use Loomo for optimal user experience.")
         } else {
-            robotManager.initRobotConnection(this, false)
-            initAndroidTTS(false)
-            val offlineString =
-                "Unfortunately I can't connect to the internet. My functionality might be limited."
-            showText(offlineString)
+            showText("Unfortunately I can't connect to the internet. My functionality might be limited.")
+            handler.post {
+                startpageFragment?.updateOnlineServicesInitializedView(
+                    onlineServicesInitialized
+                )
+            }
         }
     }
 
-    fun onSpeechFinished (online: Boolean) {
-        if(online) {
+    private fun initOnlineServices() {
+        dialogflowManager.init(this)
+        timerManager.init(this)
+        onlineServicesInitialized = true
+        handler.post {
+            startpageFragment?.updateOnlineServicesInitializedView(
+                onlineServicesInitialized
+            )
+        }
+    }
+
+    private fun checkInternetConnection() {
+        isOnline = NetworkUtils.hasInternetConnection(connectivityManager)
+        handler.post { startpageFragment?.updateIsOnlineView(isOnline) }
+    }
+
+    fun onSpeechFinished() {
+
+        checkInternetConnection()
+
+        if (isOnline) {
+            if (!onlineServicesInitialized) {
+                initOnlineServices()
+            }
             if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
                 Log.d(TAG, "All params ready.")
                 robotManager.startWakeUpListener()
                 currentResponse = null
             } else {
                 Log.e(TAG, "Not enough params")
-                startAudioRecording(true)
+                startAudioRecording()
             }
         } else {
             robotManager.startWakeUpListener()
         }
     }
 
-    private fun initAndroidTTS(online: Boolean) {
+    private fun initAndroidTTS() {
 
         mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
 
             if (status == TextToSpeech.SUCCESS) {
                 mTTS?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onDone(utteranceId: String) {
-                        onSpeechFinished(online)
+                        onSpeechFinished()
                     }
+
                     override fun onError(utteranceId: String) {}
                     override fun onStart(utteranceId: String) {}
                 })
@@ -130,23 +158,25 @@ class StartpagePresenter @Inject constructor(
      * Initialize Manual speech after button click
      */
     override fun initManualSpeech() {
-
-        if (NetworkUtils.hasInternetConnection(connectivityManager)) {
-            startAudioRecording(true)
-        } else {
-            startAudioRecording(false)
-        }
+        startAudioRecording()
     }
 
     /**
      * Start audio recording and analyze it with Google STT
      */
-    fun startAudioRecording(online: Boolean) {
+    fun startAudioRecording() {
+
+        checkInternetConnection()
 
         Log.d(TAG, "recording ...")
         val timeoutHandler = Handler(Looper.getMainLooper())
 
-        if (online) {
+        if (isOnline) {
+
+            if (!onlineServicesInitialized) {
+                initOnlineServices()
+            }
+
             showText("I'm listening...")
             val isFirstRequest = AtomicBoolean(true)
             mAudioEmitter = AudioEmitter()
@@ -284,7 +314,10 @@ class StartpagePresenter @Inject constructor(
     }
 
     private fun speak(text: String, onlineTTS: Boolean) {
-        if (onlineTTS) {
+
+        checkInternetConnection()
+
+        if (onlineTTS && isOnline) {
             googleCloudTTSManager.textToSpeech(text, ::onSpeechFinished)
         } else {
             mTTS?.speak(text, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())

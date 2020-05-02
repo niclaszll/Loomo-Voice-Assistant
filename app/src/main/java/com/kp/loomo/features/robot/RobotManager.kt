@@ -25,7 +25,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     // Loomo SDK
     private var mRecognizer: Recognizer? = null
-    //private var mSpeaker: Speaker? = null
 
     // Listeners
     private var mWakeupListener: WakeupListener? = null
@@ -38,8 +37,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     private var mVision: Vision? = null
     private var mHead: Head? = null
     private var mBase: Base? = null
-
-    private val mPersonTrackingProfile: PersonTrackingProfile? = null
 
     private var startTime: Long = 0
 
@@ -57,16 +54,16 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     private var startpagePresenter: StartpagePresenter? = null
 
-    fun initRobotConnection(presenter: StartpagePresenter, online: Boolean) {
+    fun initRobotConnection(presenter: StartpagePresenter) {
         startpagePresenter = presenter
-        initComponents(online)
-        initListeners(online)
+        initComponents()
+        initListeners()
     }
 
     /**
      * Init Loomo components
      */
-    private fun initComponents(online: Boolean) {
+    private fun initComponents() {
         mRecognizer = Recognizer.getInstance()
         mBase = Base.getInstance()
         mVision = Vision.getInstance()
@@ -126,24 +123,12 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
             }
         })
 
-        /*
-        mSpeaker!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
-            override fun onBind() {
-                Log.d(TAG, "Speaker service onBind")
-                mSpeaker!!.setVolume(50)
-            }
-
-            override fun onUnbind(s: String) {
-                Log.d(TAG, "Speaker service onUnbind")
-            }
-        })*/
-
     }
 
     /**
      * Init listeners
      */
-    private fun initListeners(online: Boolean) {
+    private fun initListeners() {
         mTtsListener = object : TtsListener {
             override fun onSpeechStarted(s: String) {
                 //s is speech content, callback this method when speech is starting.
@@ -176,7 +161,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                     "Wakeup result:" + wakeupResult?.result + ", angle " + wakeupResult?.angle
                 )
                 // actionInitiateTrack()
-                startpagePresenter?.startAudioRecording(online)
+                startpagePresenter?.startAudioRecording()
 
             }
 
@@ -297,13 +282,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         } catch (e: Throwable) {
             Log.e(TAG, "Exception: ", e)
         }
-    }
-
-    /**
-     * Make Loomo speak
-     */
-    fun speak(text: String) {
-        //mSpeaker!!.speak(text, mTtsListener!!)
     }
 
     /**

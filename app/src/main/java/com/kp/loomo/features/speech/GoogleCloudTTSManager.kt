@@ -17,7 +17,7 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
     private val url = "https://texttospeech.googleapis.com/v1beta1/text:synthesize"
     private val client = OkHttpClient()
 
-    fun textToSpeech(text: String, callbackOnSpeechFinished: (online: Boolean) -> Unit) = runBlocking {
+    fun textToSpeech(text: String, callbackOnSpeechFinished: () -> Unit) = runBlocking {
 
         client.newCall(createRequest(text)).enqueue(object : Callback {
             override fun onFailure(call: Call?, e: IOException) {
@@ -64,7 +64,7 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
         )
     }
 
-    private fun playAudio(audioResponse: AudioResponse, callback: (online: Boolean) -> Unit) {
+    private fun playAudio(audioResponse: AudioResponse, callback: () -> Unit) {
         try {
             val dataSource = "data:audio/mp3;base64,${audioResponse.audioContent}"
             mediaPlayer = MediaPlayer().apply {
@@ -73,7 +73,7 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
                 start()
             }
             mediaPlayer!!.setOnCompletionListener {
-                callback(true)
+                callback()
             }
         } catch (IoEx: IOException) {
             throw IoEx

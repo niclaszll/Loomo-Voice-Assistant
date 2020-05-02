@@ -22,7 +22,7 @@ class SystemSettingsManager @Inject constructor(applicationContext: Context) {
         this.window = w
         if (window != null) {
             setBrightness(100)
-            setAudioVolume(20)
+            setAudioVolume(80)
         }
     }
 

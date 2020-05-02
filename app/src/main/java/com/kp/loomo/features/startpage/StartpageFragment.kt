@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -113,6 +114,26 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         ) {
             Log.d("StartpageFragment", "Permissions granted 2")
             presenter.initSpeech()
+        }
+    }
+
+    override fun updateIsOnlineView(isOnline: Boolean) {
+        if (isOnline) {
+            isOnlineView.text = "Online"
+            isOnlineView.setTextColor(Color.parseColor("#00d66f"))
+        } else {
+            isOnlineView.text = "Offline"
+            isOnlineView.setTextColor(Color.parseColor("#d61900"))
+        }
+    }
+
+    override fun updateOnlineServicesInitializedView(isInitialized: Boolean) {
+        if (isInitialized) {
+            onlineServicesInitializedView.text = "Initialized"
+            onlineServicesInitializedView.setTextColor(Color.parseColor("#00d66f"))
+        } else {
+            onlineServicesInitializedView.text = "Not initialized yet"
+            onlineServicesInitializedView.setTextColor(Color.parseColor("#d61900"))
         }
     }
 
