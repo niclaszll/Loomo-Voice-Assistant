@@ -282,8 +282,14 @@ class StartpagePresenter @Inject constructor(
      * Handle response from Dialogflow (online)
      */
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
-        currentResponse = response
-        val botReply = intentHandler.handleIntent(response)
+        val botReply: String
+
+        if (response.queryResult.fulfillmentText == "") {
+            botReply = "Sorry, I can't answer this right now. Please try again later."
+        } else {
+            currentResponse = response
+            botReply = intentHandler.handleIntent(response)
+        }
 
         startpageFragment?.showText(botReply, OutputView.RSP)
 
