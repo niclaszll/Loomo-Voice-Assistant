@@ -284,7 +284,7 @@ class StartpagePresenter @Inject constructor(
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
         val botReply: String
 
-        if (response.queryResult.fulfillmentText == "" && response.webhookStatus.code == com.google.rpc.Status.newBuilder().setCode(4).build().code) {
+        if (response.queryResult.fulfillmentText == "" && response.webhookStatus.code == 4) {
             botReply = "Sorry, I can't answer this right now. Please try again later."
         } else {
             currentResponse = response
