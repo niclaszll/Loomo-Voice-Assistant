@@ -8,6 +8,8 @@ interface StartpageContract {
     interface View : BaseView<Presenter> {
         fun showText(resourceIdentifier: Int, view: OutputView)
         fun showText(text: String, view: OutputView)
+        fun updateIsOnlineView(isOnline: Boolean)
+        fun updateOnlineServicesInitializedView(isInitialized: Boolean)
     }
 
     interface Presenter : BasePresenter<View> {
