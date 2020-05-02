@@ -91,27 +91,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
                             val empty = sharedPrefs.getBoolean(time, false)//check if time empty
-
-                            val startTime = toTimeNumber(time)
-                            val endTime = startTime + 1 //ends + 1h later
-                            //how to get name
-                            val x = mustHave
-                            val appMap = mapOf(startTime to x, endTime to "y")
-                            //what if the key is time?
-                            editor.putBoolean(time, true)
-                            editor.putString(time, mustHave + appMap)
-                            editor.apply()
-                            return "Got it. $x at $time."
-
-                        }
-                    }
-                    return "Make - Sorry, couldn't make the appointment."
-                } else if (keyword == "create" && intentMessage.contains(keyword, true)) {
-                    for (time in times) {
-                        if (intentMessage.contains(time, true)) {
-                            val empty = sharedPrefs.getBoolean(time, false)//check if time empty
-                                //theoretically an if (!empty) { } is here to check if spot is free
-                                // if empty is default(false) then it is empty
+                            if (!empty) {
                                 val startTime = toTimeNumber(time)
                                 val endTime = startTime + 1 //ends + 1h later
                                 //how to get name
@@ -122,86 +102,117 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences): I
                                 editor.putString(time, mustHave + appMap)
                                 editor.apply()
                                 return "Got it. $x at $time."
-
+                            }
+                            else {
+                                return "Create - Sorry, couldn't make the appointment."
+                            }
                         }
                     }
-                    return "Create - Sorry, couldn't make the appointment."
+                    return "Make - Sorry, couldn't make the appointment."
+                } else if (keyword == "create" && intentMessage.contains(keyword, true)) {
+                    for (time in times) {
+                        if (intentMessage.contains(time, true)) {
+                            val empty = sharedPrefs.getBoolean(time, false)//check if time empty
+                                //theoretically an if (!empty) { } is here to check if spot is free
+                                // if empty is default(false) then it is empty
+                            if (!empty) {
+                                val startTime = toTimeNumber(time)
+                                val endTime = startTime + 1 //ends + 1h later
+                                //how to get name
+                                val x = mustHave
+                                val appMap = mapOf(startTime to x, endTime to "y")
+                                //what if the key is time?
+                                editor.putBoolean(time, true)
+                                editor.putString(time, mustHave + appMap)
+                                editor.apply()
+                                return "Got it. $x at $time."
+                            }
+                            else {
+                                return "Create - Sorry, couldn't make the appointment."
+                            }
+                        }
+                    }
+
                 } else if (keyword == "delete" && intentMessage.contains(keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
-                            val finding = sharedPrefs.getBoolean(time, true)
-                            if (finding.equals(true)) {
+                            Log.d("boolean", sharedPrefs.getBoolean(time, false).toString())
+                            val finding = sharedPrefs.getBoolean(time, false)
+                            if (finding == true) {
                                 val findString = sharedPrefs.getString(time, "")
                                 editor.putString(time, "delete")
                                 editor.apply()
-                                println("Got it. Delete $findString on $time.")
+                                return "Got it. Delete $findString on $time."
                                 //if boolean is true, then the appointment exists and this will change name
                                 //else it does not exist and nothing is to be done
                             }
-                            return "Finished."
+                            else {
+                                return "Sorry, no appointment found."
+                            }
                         }
                     }
                     return "Delete - Sorry, couldn't delete it."
                 } else if (keyword == "cancel" && intentMessage.contains(keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
-                            val finding = sharedPrefs.getBoolean(time, true)
-                            if (finding.equals(true)) {
+                            Log.d("boolean", sharedPrefs.getBoolean(time, false).toString())
+                            
+                            val finding = sharedPrefs.getBoolean(time, false)
+                            if (finding == true) {
                                 val findString = sharedPrefs.getString(time, "")
                                 editor.putString(time, "delete")
                                 editor.apply()
-                                println("Got it. Cancel $findString on $time.")
+                                return "Got it. Cancel $findString on $time."
                                 //if boolean is true, then the appointment exists and this will change name
                                 //else it does not exist and nothing is to be done
                             }
-                            return "Finished."
+                            else {
+                                return "Sorry, no appointment found."
+                            }
                         }
                     }
                     return "Cancel - Sorry, couldn't cancel it."
                 } else if (keyword == "return" && intentMessage.contains(keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
+                            Log.d("boolean", sharedPrefs.getBoolean(time, false).toString())
                             val findings = sharedPrefs.getBoolean(time, false)
                             //see if it exists
-                            if(findings.equals(true)) { //in need for a better comparison
+                            if(findings == true) { //in need for a better comparison
                                 //if boolean true, then there are appointments for the time
                                 val findingsString = sharedPrefs.getString(time, "")
-                                println("Your appointment: $findingsString at $time.")
+                                return "Your appointment: $findingsString at $time."
                             } //for findings false
-                            return "No appointment found at that time."
+                            else {
+                                return "No appointment found at that time."
+                            }
                         }
                     }
                     //if no given time/all appointments
-                    val numbs = listOf("one am", "two am", "three am",
+                    /*val numbs = listOf("one am", "two am", "three am",
                         "four am", "five am", "six am", "seven am", "eight am",
                         "nine am", "ten am", "eleven am", "twelve pm", "one pm",
                         "two pm", "three pm", "four pm", "five pm", "six pm",
                         "seven pm", "eight pm", "nine pm", "ten pm", "eleven pm",
                         "twelve am")//if no time is given, test all times
                     val findingsString = sharedPrefs.getString("${numbs.forEach{i->i}}", "")
-                    println("Found: $findingsString at ${numbs.forEach{i->i}}")
+                    println("Found: $findingsString at ${numbs.forEach{i->i}}")*/
                 } else if (keyword == "tell" && intentMessage.contains(keyword, true)) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
+                            Log.d("boolean", sharedPrefs.getBoolean(time, false).toString())
                             val findings = sharedPrefs.getBoolean(time, false)
                             //see if it exists
-                            if(findings.equals(true)) { //in need for a better comparison
+                            if(findings == true) { //in need for a better comparison
                                 //if boolean true, then there are appointments for the time
                                 val findingsString = sharedPrefs.getString(time, "")
-                                println("Your appointment: $findingsString at $time.")
+                                return "Your appointment: $findingsString at $time."
                             } //for findings false
-                            return "No appointment found at that time."
+                            else {
+                                return "No appointment found at that time."
+                            }
                         }
                     }
-                    //if no given time/all appointments
-                    val numbs = listOf("one am", "two am", "three am",
-                        "four am", "five am", "six am", "seven am", "eight am",
-                        "nine am", "ten am", "eleven am", "twelve pm", "one pm",
-                        "two pm", "three pm", "four pm", "five pm", "six pm",
-                        "seven pm", "eight pm", "nine pm", "ten pm", "eleven pm",
-                        "twelve am")//if no time is given, test all times
-                    val findingsString = sharedPrefs.getString("${numbs.forEach{i->i}}", "")
-                    println("Found: $findingsString at ${numbs.forEach{i->i}}")
                 }
             }
         }
