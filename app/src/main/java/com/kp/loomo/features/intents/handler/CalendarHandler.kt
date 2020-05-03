@@ -128,9 +128,11 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
                                     allEvents.add(fromTimeNumber(i))
                                 }
                             }
-                            
+
                             if (allEvents.isEmpty()) {
                                 return "You got no appointments yet."
+                            } else if (allEvents.size == 1) {
+                                return "You got an appointment at $time."
                             }
 
                             val allEventsString = allEvents.joinToString()
