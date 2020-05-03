@@ -9,13 +9,9 @@ class CalculatorHandler : IntentMessageHandler {
 
     private val keywords = arrayOf(
         "plus", "sum", "add", "addition",
-        "minus", "difference", "substraction", "subtract",
+        "minus", "difference", "subtraction", "subtract",
         "multiplication", "times", "product",
         "quotient", "division", "divided by"
-    )
-
-    private val numbers = arrayOf(
-        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
     )
 
     override fun canHandle(intentMessage: DetectIntentResponse): Boolean {
@@ -74,7 +70,7 @@ class CalculatorHandler : IntentMessageHandler {
                 return "It's $sum, right?"
             }
 
-            if ((keyword == "minus" || keyword == "difference" || keyword == "substraction" || keyword == "subtract") && intentMessage.contains(
+            if ((keyword == "minus" || keyword == "difference" || keyword == "subtraction" || keyword == "subtract") && intentMessage.contains(
                     keyword,
                     true
                 )
