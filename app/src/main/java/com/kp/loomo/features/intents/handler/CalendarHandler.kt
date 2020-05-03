@@ -132,11 +132,11 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
                             if (allEvents.isEmpty()) {
                                 return "You got no appointments yet."
                             } else if (allEvents.size == 1) {
-                                return "You got an appointment at $time."
+                                return "You got an appointment at ${allEvents[0]}"
                             }
 
-                            val allEventsString = allEvents.joinToString()
                             // replace last "," with "and"
+                            val allEventsString = allEvents.joinToString()
                             val toReplace = ","
                             val start: Int = allEventsString.lastIndexOf(toReplace)
                             val allEventsStringFormatted = StringBuilder()
