@@ -2,8 +2,8 @@
 
 package com.kp.loomo.features.intents.handler
 
-import android.util.Log
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.cloud.dialogflow.v2beta1.DetectIntentResponse
 import com.kp.loomo.features.intents.IntentMessageHandler
 import java.text.SimpleDateFormat
@@ -79,7 +79,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
                 ) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
-                            //check if time slot is free
+                            // check if time slot is free
                             val empty = sharedPrefs.getBoolean(toTimeNumber(time).toString(), true)
                             return if (empty) {
                                 val startTime = toTimeNumber(time)
@@ -99,7 +99,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
                 ) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
-                            //check if time slot is free
+                            // check if time slot is free
                             val empty = sharedPrefs.getBoolean(toTimeNumber(time).toString(), true)
                             return if (!empty) {
                                 val startTime = toTimeNumber(time)
@@ -119,12 +119,29 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
                 ) {
                     for (time in times) {
                         if (intentMessage.contains(time, true)) {
-                            //check if time slot is free
+                            // check if time slot is free
                             val empty = sharedPrefs.getBoolean(toTimeNumber(time).toString(), true)
+                            val allEvents = arrayListOf<String>()
+                            // get all events
+                            for (i in 0..23) {
+                                if (!sharedPrefs.getBoolean(i.toString(), true)) {
+                                    allEvents.add(fromTimeNumber(i))
+                                }
+                            }
+                            val allEventsString = allEvents.joinToString()
+
+                            // replace last "," with "and"
+                            val toReplace = ","
+                            val start: Int = allEventsString.lastIndexOf(toReplace)
+                            val allEventsStringFormatted = StringBuilder()
+                            allEventsStringFormatted.append(allEventsString.substring(0, start))
+                            allEventsStringFormatted.append(" and")
+                            allEventsStringFormatted.append(allEventsString.substring(start + toReplace.length))
+
                             return if (!empty) {
-                                "You got an appointment at $time."
+                                "You got appointments at $allEventsStringFormatted."
                             } else {
-                                "There is no appointment at $time."
+                                "There is no appointment at $time. But you got appointments at $allEventsStringFormatted."
                             }
                         }
                     }
@@ -163,6 +180,37 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
             "twelve am" -> return 0 //midnight
         }
         return 0
+    }
+
+    private fun fromTimeNumber(number: Int): String {
+        when (number) {
+            0 -> return "twelve am"
+            1 -> return "one am"
+            2 -> return "two am"
+            3 -> return "three am"
+            4 -> return "four am"
+            5 -> return "five am"
+            6 -> return "six am"
+            7 -> return "seven am"
+            8 -> return "eight am"
+            9 -> return "nine am"
+            10 -> return "ten am"
+            11 -> return "eleven am"
+            12 -> return "twelve pm"
+            13 -> return "one pm"
+            14 -> return "two pm"
+            15 -> return "three pm"
+            16 -> return "four pm"
+            17 -> return "five pm"
+            18 -> return "six pm"
+            19 -> return "seven pm"
+            20 -> return "eight pm"
+            21 -> return "nine pm"
+            22 -> return "ten pm"
+            23 -> return "eleven pm"
+            24 -> return "twelve am"
+        }
+        return "undefined time"
     }
 }
 
