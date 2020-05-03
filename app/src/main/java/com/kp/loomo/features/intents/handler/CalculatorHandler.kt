@@ -14,11 +14,7 @@ class CalculatorHandler : IntentMessageHandler {
         "quotient", "division", "divided by"
     )
 
-    private val firstNumbers = arrayOf(
-        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
-    )
-
-    private val secondNumbers = arrayOf(
+    private val numbers = arrayOf(
         "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
     )
 
@@ -31,28 +27,27 @@ class CalculatorHandler : IntentMessageHandler {
         val firstNumber = intentMessage.queryResult.parameters.fieldsMap["number1"]!!.numberValue
         val secondNumber = intentMessage.queryResult.parameters.fieldsMap["number2"]!!.numberValue
 
-        val operation = intentMessage.queryResult.parameters.fieldsMap["operation"]!!.stringValue
-		when (operation) {
-			"Addition" -> {
-				val sum = firstNumber + secondNumber
-				return "${sum.toInt()}, right?"
-			}
-			"Subtraction" -> {
-				val sub = firstNumber - secondNumber
-				return "${sub.toInt()}, right?"
-			}
-			"Multiplication" -> {
-				val mul = firstNumber * secondNumber
-				return "${mul.toInt()}, right?"
-			}
-			"Quotient" -> {
-				val div = firstNumber / secondNumber
-				return "${div.toInt()}, right?"
-			}
-			else -> {
-				return "Not a valid operation."
-			}
-		}
+        when (intentMessage.queryResult.parameters.fieldsMap["operation"]!!.stringValue) {
+            "Addition" -> {
+                val sum = firstNumber + secondNumber
+                return "${sum.toInt()}, right?"
+            }
+            "Subtraction" -> {
+                val sub = firstNumber - secondNumber
+                return "${sub.toInt()}, right?"
+            }
+            "Multiplication" -> {
+                val mul = firstNumber * secondNumber
+                return "${mul.toInt()}, right?"
+            }
+            "Quotient" -> {
+                val div = firstNumber / secondNumber
+                return "${div.toInt()}, right?"
+            }
+            else -> {
+                return "Not a valid operation."
+            }
+        }
     }
 
 
@@ -68,78 +63,48 @@ class CalculatorHandler : IntentMessageHandler {
     override fun handleOffline(intentMessage: String): String {
 
         for (keyword in keywords) {
-            if (keyword == "plus" || keyword == "sum" || keyword == "add" || keyword == "addition") {
-                if (intentMessage.contains(keyword, true)) {
-                    for (firstNumber in firstNumbers)
-                        if (intentMessage.contains(firstNumber, true)) {
-                            val firstValue = mapStringToNumber(firstNumber)
-                            for (secondNumber in secondNumbers) {
-                                if (intentMessage.contains(secondNumber, true)) {
-                                    val secondValue = mapStringToNumber(secondNumber)
-                                    val result = firstValue + secondValue
-                                    return "It's $result, right?"
-                                }
-                            }
-                            return "Sorry, I didn't get the second number."
-                        }
-                }
-                return "'Sorry, I didn't get that."
+            if ((keyword == "plus" || keyword == "sum" || keyword == "add" || keyword == "addition") && intentMessage.contains(
+                    keyword,
+                    true
+                )
+            ) {
+                val numberArray = intentMessage.split(" ", ignoreCase = true)
+                val sum =
+                    mapStringToNumber(numberArray[0]) + mapStringToNumber(numberArray[numberArray.lastIndex])
+                return "It's $sum, right?"
             }
 
-            if (keyword == "minus" || keyword == "difference" || keyword == "substraction" || keyword == "subtract") {
-                if (intentMessage.contains(keyword, true)) {
-                    for (firstNumber in firstNumbers) {
-                        if (intentMessage.contains(firstNumber, true)) {
-                            val firstValue = mapStringToNumber(firstNumber)
-                            for (secondNumber in secondNumbers) {
-                                if (intentMessage.contains(secondNumber, true)) {
-                                    val secondValue = mapStringToNumber(secondNumber)
-                                    val result = firstValue - secondValue
-                                    return "It's $result, right?"
-                                }
-                            }
-                            return "Sorry, I didn't get the second number."
-                        }
-                    }
-                }
-                return "Sorry, I din't get that."
+            if ((keyword == "minus" || keyword == "difference" || keyword == "substraction" || keyword == "subtract") && intentMessage.contains(
+                    keyword,
+                    true
+                )
+            ) {
+                val numberArray = intentMessage.split(" ", ignoreCase = true)
+                val dif =
+                    mapStringToNumber(numberArray[0]) - mapStringToNumber(numberArray[numberArray.lastIndex])
+                return "It's $dif, right?"
             }
 
-            if (keyword == "multiplication" || keyword == "times" || keyword == " product") {
-                if (intentMessage.contains(keyword, true)) {
-                    for (firstNumber in firstNumbers) {
-                        if (intentMessage.contains(firstNumber, true)) {
-                            val firstValue = mapStringToNumber(firstNumber)
-                            for (secondNumber in secondNumbers) {
-                                if (intentMessage.contains(secondNumber, true)) {
-                                    val secondValue = mapStringToNumber(secondNumber)
-                                    val result = firstValue * secondValue
-                                    return "It's $result, right?"
-                                }
-                            }
-                            return "Sorry, I didn't get the second number."
-                        }
-                    }
-                    return "Sorry, I didn't get that."
-                }
+            if ((keyword == "multiplication" || keyword == "times" || keyword == " product") && intentMessage.contains(
+                    keyword,
+                    true
+                )
+            ) {
+                val numberArray = intentMessage.split(" ", ignoreCase = true)
+                val prod =
+                    mapStringToNumber(numberArray[0]) * mapStringToNumber(numberArray[numberArray.lastIndex])
+                return "It's $prod, right?"
             }
-            if (keyword == "quotient" || keyword == "division" || keyword == "divided by") {
-                if (intentMessage.contains(keyword, true)) {
-                    for (firstNumber in firstNumbers) {
-                        if (intentMessage.contains(firstNumber, true)) {
-                            val firstValue = mapStringToNumber(firstNumber)
-                            for (secondNumber in secondNumbers) {
-                                if (intentMessage.contains(secondNumber, true)) {
-                                    val secondValue = mapStringToNumber(secondNumber)
-                                    val result = firstValue / secondValue
-                                    return "It's $result, right?"
-                                }
-                            }
-                            return "Sorry, I didn't get the second number."
-                        }
-                    }
-                    return "Sorry, I didn't get that."
-                }
+
+            if ((keyword == "quotient" || keyword == "division" || keyword == "divided by") && intentMessage.contains(
+                    keyword,
+                    true
+                )
+            ) {
+                val numberArray = intentMessage.split(" ", ignoreCase = true)
+                val quo =
+                    mapStringToNumber(numberArray[0]) / mapStringToNumber(numberArray[numberArray.lastIndex])
+                return "It's $quo, right?"
             }
         }
 
