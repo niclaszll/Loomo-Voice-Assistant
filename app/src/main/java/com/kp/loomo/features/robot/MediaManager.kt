@@ -12,13 +12,17 @@ class MediaManager @Inject constructor(private var applicationContext: Context) 
 
     private var mediaPlayer: MediaPlayer? = null
 
-    //play sound from res directory Int is raw resource id R.raw.file
+    /**
+     * Play sound from res directory Int is raw resource id R.raw.file
+     */
     fun playLocalSound(file: Int) {
         mediaPlayer = MediaPlayer.create(applicationContext, file)
         mediaPlayer?.start()
     }
 
-    //http streaming sound
+    /**
+     * Play a sound from an Url
+     */
     fun playSoundFromUrl(url: String) {
         mediaPlayer = MediaPlayer().apply {
             setDataSource(url)
@@ -27,6 +31,9 @@ class MediaManager @Inject constructor(private var applicationContext: Context) 
         }
     }
 
+    /**
+     * Reset the MediaManager
+     */
     fun resetPlayer() {
         mediaPlayer?.reset()
         mediaPlayer?.release()

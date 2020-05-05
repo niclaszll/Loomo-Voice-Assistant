@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-private const val TAG = "Audio"
+private const val TAG = "AudioEmitter"
 
 /**
  * Emits microphone audio using a background [ScheduledExecutorService].
@@ -20,7 +20,9 @@ internal class AudioEmitter {
     private var mAudioExecutor: ScheduledExecutorService? = null
     private lateinit var mBuffer: ByteArray
 
-    /** Start streaming  */
+    /**
+     * Start streaming
+     */
     fun start(
         encoding: Int = AudioFormat.ENCODING_PCM_16BIT,
         channel: Int = AudioFormat.CHANNEL_IN_MONO,
@@ -57,7 +59,9 @@ internal class AudioEmitter {
         }, 0, 10, TimeUnit.MILLISECONDS)
     }
 
-    /** Stop Streaming  */
+    /**
+     * Stop Streaming
+     */
     fun stop() {
         // stop events
         mAudioExecutor?.shutdown()

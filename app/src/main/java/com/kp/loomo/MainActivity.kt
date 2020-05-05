@@ -87,6 +87,9 @@ class MainActivity : DaggerAppCompatActivity() {
         return true
     }
 
+    /**
+     * Menu actions to switch between TTS method and voice gender (for online speech)
+     */
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
 
         R.id.action_google_tts -> {

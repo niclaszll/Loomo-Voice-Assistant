@@ -17,8 +17,10 @@ class SystemSettingsManager @Inject constructor(applicationContext: Context) {
             Context.AUDIO_SERVICE
         ) as AudioManager
 
+    /**
+     * Setup the SystemManager with default values for brightness and volume
+     */
     fun setupSystemManager(w: Window?) {
-        //setup brightness control
         this.window = w
         if (window != null) {
             setBrightness(100)
@@ -26,6 +28,9 @@ class SystemSettingsManager @Inject constructor(applicationContext: Context) {
         }
     }
 
+    /**
+     * Set the window brightness
+     */
     fun setBrightness(value: Int) {
         val brightness = value / 255.toFloat()
         if (window != null) {
@@ -35,6 +40,9 @@ class SystemSettingsManager @Inject constructor(applicationContext: Context) {
         }
     }
 
+    /**
+     * Set the audio volume
+     */
     fun setAudioVolume(volume: Int) {
         // music
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)

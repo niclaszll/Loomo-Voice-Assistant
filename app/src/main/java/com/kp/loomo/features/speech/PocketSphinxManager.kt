@@ -81,6 +81,7 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
 
         Log.d(TAG, "recording ...")
         responseHandler?.showText("Initializing, please wait...")
+        // wait 2 seconds to ensure initialization is completed before speaking
         Thread.sleep(2000)
         responseHandler?.showText("I'm listening...")
     }
@@ -125,14 +126,23 @@ class PocketSphinxManager @Inject constructor(private var applicationContext: Co
         responseHandler?.handlePocketSphinxResponse("Timeout")
     }
 
+    /**
+     * Do nothing on beginning of speech
+     */
     override fun onBeginningOfSpeech() {}
 
+    /**
+     * Start a new intent search on end of speech
+     */
     override fun onEndOfSpeech() {
         if (recognizer?.searchName.equals(intentSearch)) startNewSearch(intentSearch)
     }
 
+    /**
+     * Handle error
+     */
     override fun onError(error: Exception) {
-        Log.d(TAG, error.message!!)
+        Log.e(TAG, error.message!!)
     }
 
     /**

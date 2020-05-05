@@ -6,6 +6,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
+/**
+ * Used for dependency injection (see "di" folder)
+ */
 @Module
 abstract class StartpageModule {
 

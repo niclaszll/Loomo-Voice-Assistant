@@ -24,7 +24,9 @@ class IntentHandler @Inject constructor(
 ) {
     private val listOfHandler = arrayListOf<IntentMessageHandler>()
 
-    // add all handlers here
+    /**
+     * Initialize list of all custom handlers
+     */
     init {
         listOfHandler.add(CalculatorHandler())
         listOfHandler.add(MoveRobotHandler(robotManager))
@@ -47,9 +49,6 @@ class IntentHandler @Inject constructor(
      */
     fun handleIntent(intentMessage: DetectIntentResponse): String {
 
-        Log.d("IntentHandler", intentMessage.toString())
-
-        // iterate over each handler and check if handler can handle intentMessage
         listOfHandler.forEach {
             if (it.canHandle(intentMessage)) {
                 return it.handle(intentMessage)
@@ -63,7 +62,6 @@ class IntentHandler @Inject constructor(
      */
     fun handleOfflineIntent(intentMessage: String): String {
 
-        // iterate over each handler and check if handler can handle response
         listOfHandler.forEach {
             if (it.canHandleOffline(intentMessage)) {
                 return it.handleOffline(intentMessage)

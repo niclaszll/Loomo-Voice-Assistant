@@ -20,10 +20,16 @@ class TimerManager(private var applicationContext: Context) {
     var viewCallback: TimerViewCallback? = null
     private val handler = Handler(Looper.getMainLooper())
 
+    /**
+     * Initialize TimerManager with view callback
+     */
     fun init(timerViewCallback: TimerViewCallback) {
         viewCallback = timerViewCallback
     }
 
+    /**
+     * Set a timer for a specific time
+     */
     fun setTimer(seconds: Int, minutes: Int) {
 
         paused = false
@@ -52,6 +58,9 @@ class TimerManager(private var applicationContext: Context) {
         }
     }
 
+    /**
+     * Play the ringtone
+     */
     private fun playRing() {
 
         var alert =

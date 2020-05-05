@@ -42,7 +42,10 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
             Log.d("StartpageFragment", "Permissions granted")
             presenter.initSpeech()
         } else {
-            Log.d("StartpageFragment", "Permissions not granted")
+            Log.d(
+                "StartpageFragment",
+                "Permissions not granted, please enable permission for recording audio and reading storage"
+            )
         }
 
         return container?.inflate(R.layout.fragment_startpage)
@@ -117,6 +120,9 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         }
     }
 
+    /**
+     * Update the isOnlineView (mostly for debugging)
+     */
     override fun updateIsOnlineView(isOnline: Boolean) {
         if (isOnline) {
             isOnlineView.text = "Online"
@@ -127,6 +133,9 @@ class StartpageFragment @Inject constructor(private var applicationContext: Cont
         }
     }
 
+    /**
+     * Update the onlineServicesInitializedView (mostly for debugging)
+     */
     override fun updateOnlineServicesInitializedView(isInitialized: Boolean) {
         if (isInitialized) {
             onlineServicesInitializedView.text = "Initialized"

@@ -17,6 +17,10 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
     private val url = "https://texttospeech.googleapis.com/v1beta1/text:synthesize"
     private val client = OkHttpClient()
 
+
+    /**
+     * Convert text to speech via Google Cloud TTS
+     */
     fun textToSpeech(text: String, callbackOnSpeechFinished: () -> Unit) = runBlocking {
 
         client.newCall(createRequest(text)).enqueue(object : Callback {
@@ -41,6 +45,9 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
         })
     }
 
+    /**
+     * Create the request
+     */
     private fun createRequest(text: String) = Request.Builder()
         .url(url)
         .addHeader("X-Goog-Api-Key", apiKey)
@@ -48,6 +55,9 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
         .post(createRequestBody(text))
         .build()
 
+    /**
+     * Create the request body
+     */
     private fun createRequestBody(text: String): RequestBody {
 
         val voiceGender = sharedPrefs.getString("voice_gender", "FEMALE")
@@ -64,6 +74,9 @@ class GoogleCloudTTSManager @Inject constructor(private var sharedPrefs: SharedP
         )
     }
 
+    /**
+     * Play audio from Google Cloud TTS response
+     */
     private fun playAudio(audioResponse: AudioResponse, callback: () -> Unit) {
         try {
             val dataSource = "data:audio/mp3;base64,${audioResponse.audioContent}"

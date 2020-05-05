@@ -43,7 +43,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     private var mCurrentState: RobotStateType? = null
 
     enum class RobotStateType {
-        INITIATE_DETECT, TERMINATE_DETECT, INITIATE_TRACK, TERMINATE_TRACK
+        INITIATE_DETECT, INITIATE_TRACK, TERMINATE_TRACK
     }
 
     private var mDts: DTS? = null
@@ -54,6 +54,9 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
 
     private var startpagePresenter: StartpagePresenter? = null
 
+    /**
+     * Initialize RobotConnection with components listeners
+     */
     fun initRobotConnection(presenter: StartpagePresenter) {
         startpagePresenter = presenter
         initComponents()
@@ -68,7 +71,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         mBase = Base.getInstance()
         mVision = Vision.getInstance()
         mHead = Head.getInstance()
-        //mSpeaker = Speaker.getInstance()
 
         mRecognizer!!.bindService(applicationContext, object : ServiceBinder.BindStateListener {
             override fun onBind() {
@@ -131,7 +133,7 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
     private fun initListeners() {
         mTtsListener = object : TtsListener {
             override fun onSpeechStarted(s: String) {
-                //s is speech content, callback this method when speech is starting.
+                // s is speech content, callback this method when speech is starting.
                 Log.d(TAG, "onSpeechStarted() called with: s = [$s]")
             }
 
@@ -216,8 +218,6 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
                     )
                     mBase!!.controlMode = Base.CONTROL_MODE_FOLLOW_TARGET
                     val personDistance = person.distance
-                    // There is a bug in DTS, while using person.getDistance(), please check the result
-                    // The correct distance is between 0.35 meters and 5 meters
                     if (personDistance > 0.35 && personDistance < 5) {
                         val followDistance = (personDistance - 1.2).toFloat()
                         val theta = person.theta
@@ -364,6 +364,9 @@ class RobotManager @Inject constructor(private var applicationContext: Context) 
         }
     }
 
+    /**
+     * Look in a specific direction
+     */
     fun lookDirection(direction: String) {
 
         if (mHead != null && isHeadBound) {

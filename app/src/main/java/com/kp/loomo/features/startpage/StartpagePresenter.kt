@@ -93,6 +93,9 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
+    /**
+     * Initialize all online services
+     */
     private fun initOnlineServices() {
         dialogflowManager.init(this)
         timerManager.init(this)
@@ -104,11 +107,17 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
+    /**
+     * Check internet connection and update debug view
+     */
     private fun checkInternetConnection() {
         isOnline = NetworkUtils.hasInternetConnection(connectivityManager)
         handler.post { startpageFragment?.updateIsOnlineView(isOnline) }
     }
 
+    /**
+     * Handle everything after speech is finished
+     */
     fun onSpeechFinished() {
 
         checkInternetConnection()
@@ -130,6 +139,9 @@ class StartpagePresenter @Inject constructor(
         }
     }
 
+    /**
+     * Initialize the built in TTS for offline speech
+     */
     private fun initAndroidTTS() {
 
         mTTS = TextToSpeech(applicationContext, TextToSpeech.OnInitListener { status ->
@@ -148,14 +160,13 @@ class StartpagePresenter @Inject constructor(
             }
 
             if (status != TextToSpeech.ERROR) {
-                // if there is no error then set language
                 mTTS?.language = Locale.US
             }
         })
     }
 
     /**
-     * Initialize Manual speech after button click
+     * Initialize manual speech recognition after button click
      */
     override fun initManualSpeech() {
         startAudioRecording()
@@ -168,7 +179,7 @@ class StartpagePresenter @Inject constructor(
 
         checkInternetConnection()
 
-        Log.d(TAG, "recording ...")
+        Log.d(TAG, "Recording ...")
         val timeoutHandler = Handler(Looper.getMainLooper())
 
         if (isOnline) {
@@ -319,6 +330,9 @@ class StartpagePresenter @Inject constructor(
         handler.post { startpageFragment?.showText(text, OutputView.RSP) }
     }
 
+    /**
+     * Make the robot speak (both offline and online)
+     */
     private fun speak(text: String, onlineTTS: Boolean) {
 
         checkInternetConnection()
