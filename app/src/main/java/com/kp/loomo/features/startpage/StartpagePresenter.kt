@@ -108,38 +108,6 @@ class StartpagePresenter @Inject constructor(
     }
 
     /**
-     * Check internet connection and update debug view
-     */
-    private fun checkInternetConnection() {
-        isOnline = NetworkUtils.hasInternetConnection(connectivityManager)
-        handler.post { startpageFragment?.updateIsOnlineView(isOnline) }
-    }
-
-    /**
-     * Handle everything after speech is finished
-     */
-    fun onSpeechFinished() {
-
-        checkInternetConnection()
-
-        if (isOnline) {
-            if (!onlineServicesInitialized) {
-                initOnlineServices()
-            }
-            if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
-                Log.d(TAG, "All params ready.")
-                robotManager.startWakeUpListener()
-                currentResponse = null
-            } else {
-                Log.e(TAG, "Not enough params")
-                startAudioRecording()
-            }
-        } else {
-            robotManager.startWakeUpListener()
-        }
-    }
-
-    /**
      * Initialize the built in TTS for offline speech
      */
     private fun initAndroidTTS() {
@@ -290,6 +258,30 @@ class StartpagePresenter @Inject constructor(
     }
 
     /**
+     * Handle everything after speech is finished
+     */
+    fun onSpeechFinished() {
+
+        checkInternetConnection()
+
+        if (isOnline) {
+            if (!onlineServicesInitialized) {
+                initOnlineServices()
+            }
+            if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
+                Log.d(TAG, "All params ready.")
+                robotManager.startWakeUpListener()
+                currentResponse = null
+            } else {
+                Log.e(TAG, "Not enough params")
+                handler.post{startAudioRecording()}
+            }
+        } else {
+            robotManager.startWakeUpListener()
+        }
+    }
+
+    /**
      * Handle response from Dialogflow (online)
      */
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
@@ -324,6 +316,14 @@ class StartpagePresenter @Inject constructor(
     }
 
     /**
+     * Check internet connection and update debug view
+     */
+    private fun checkInternetConnection() {
+        isOnline = NetworkUtils.hasInternetConnection(connectivityManager)
+        handler.post { startpageFragment?.updateIsOnlineView(isOnline) }
+    }
+
+    /**
      * Show text on screen
      */
     override fun showText(text: String) {
@@ -337,10 +337,17 @@ class StartpagePresenter @Inject constructor(
 
         checkInternetConnection()
 
+        var speechText = text
+
+        // cut off long responses to save data and time
+        if (speechText.length > 200) {
+            speechText = speechText.take(200)
+        }
+
         if (onlineTTS && isOnline) {
-            googleCloudTTSManager.textToSpeech(text, ::onSpeechFinished)
+            googleCloudTTSManager.textToSpeech(speechText, ::onSpeechFinished)
         } else {
-            mTTS?.speak(text, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
+            mTTS?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, (0..100).random().toString())
         }
     }
 
