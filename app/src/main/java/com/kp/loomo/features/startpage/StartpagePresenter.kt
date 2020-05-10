@@ -268,13 +268,20 @@ class StartpagePresenter @Inject constructor(
             if (!onlineServicesInitialized) {
                 initOnlineServices()
             }
-            if (currentResponse?.queryResult!!.allRequiredParamsPresent) {
-                Log.d(TAG, "All params ready.")
-                robotManager.startWakeUpListener()
-                currentResponse = null
-            } else {
-                Log.e(TAG, "Not enough params")
-                handler.post{startAudioRecording()}
+            when {
+                currentResponse == null -> {
+                    Log.d(TAG, "Current response is null")
+                    robotManager.startWakeUpListener()
+                }
+                currentResponse?.queryResult!!.allRequiredParamsPresent -> {
+                    Log.d(TAG, "All params ready.")
+                    robotManager.startWakeUpListener()
+                    currentResponse = null
+                }
+                else -> {
+                    Log.e(TAG, "Not enough params")
+                    handler.post{startAudioRecording()}
+                }
             }
         } else {
             robotManager.startWakeUpListener()
@@ -286,6 +293,8 @@ class StartpagePresenter @Inject constructor(
      */
     override fun handleDialogflowResponse(response: DetectIntentResponse) {
         val botReply: String
+
+        Log.d(TAG, response.toString())
 
         if (response.queryResult.fulfillmentText == "" && response.webhookStatus.code == 4) {
             botReply = "Sorry, I can't answer this right now. Please try again later."

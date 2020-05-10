@@ -53,7 +53,7 @@ class CalendarHandler constructor(private var sharedPrefs: SharedPreferences) :
         if (event == "") return intentMessage.queryResult.fulfillmentText
         val eventName = intentMessage.queryResult.parameters.fieldsMap["eventName"]!!.stringValue
         if (eventName == "") return intentMessage.queryResult.fulfillmentText
-        return "Got it. $event $eventName on $dateTime"
+        return "Got it. Created $event $eventName."
 
     }
 
